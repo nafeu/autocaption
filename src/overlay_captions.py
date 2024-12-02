@@ -1,6 +1,52 @@
 import os
 from moviepy import VideoFileClip, TextClip, CompositeVideoClip
-import webvtt
+import re
+
+
+def parse_vtt_with_highlights(vtt_path):
+    captions = []
+
+    with open(vtt_path, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+
+    current_caption = {"start": None, "end": None, "full_line": "", "highlighted_word_line": ""}
+    for line in lines:
+        line = line.strip()
+
+        if "-->" in line:
+            start, end = line.split(" --> ")
+            current_caption["start"] = start
+            current_caption["end"] = end
+
+        elif line == "":
+            if current_caption["start"] and current_caption["end"] and current_caption["full_line"]:
+                captions.append(current_caption)
+            current_caption = {"start": None, "end": None, "full_line": "", "highlighted_word_line": ""}
+
+        else:
+            line_with_highlights, highlighted_word_line = process_highlights(line)
+            current_caption["full_line"] += line_with_highlights
+            current_caption["highlighted_word_line"] += highlighted_word_line
+
+    if current_caption["start"] and current_caption["end"] and current_caption["full_line"]:
+        captions.append(current_caption)
+
+    return captions
+
+
+def process_highlights(line):
+    line_with_highlights = re.sub(r"</?u>", "", line)
+    words = line.split()
+    highlighted_word_line = ""
+
+    for word in words:
+        if "<u>" in word:
+            clean_word = re.sub(r"</?u>", "", word)
+            highlighted_word_line += clean_word + " "
+        else:
+            highlighted_word_line += " " * len(word) + " "
+
+    return line_with_highlights.strip(), highlighted_word_line[:-1]
 
 
 def create_title_header(
@@ -8,7 +54,7 @@ def create_title_header(
     video_width,
     top=300,
     background_color="black",
-    font="/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+    font="/Users/nafeu/Library/Fonts/JetBrainsMonoNL-ExtraBold.ttf",
     font_size=64,
     text_color="#F8EFBA",
     padding=20,
@@ -61,12 +107,17 @@ def overlay_captions(
     }
 
     text_clip_caption_params = {
-        "color": "white",
-        "font": "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "color": "#F8EFBA",
+        "font": "/Users/nafeu/Library/Fonts/JetBrainsMonoNL-ExtraBold.ttf",
         "font_size": int(video_width * 0.07777),
         "stroke_color": "black",
         "stroke_width": int(video_width * 0.00462),
         "size": (video_width, int(video_height * 0.26)),
+    }
+
+    text_clip_highlight_params = {
+        **text_clip_caption_params,
+        "color": "#F97F51",
     }
 
     text_clip_caption_additional_configs = {"top": int(video_height * 0.365)}
@@ -81,12 +132,13 @@ def overlay_captions(
 
     text_clip_title_header_additional_configs = {"duration": 5}
 
-    for caption in webvtt.read(vtt_file_path):
+    for caption in parse_vtt_with_highlights(vtt_file_path):
         captions.append(
             {
-                "start": time_to_seconds(caption.start),
-                "end": time_to_seconds(caption.end),
-                "text": caption.text.strip(),
+                "start": time_to_seconds(caption["start"]),
+                "end": time_to_seconds(caption["end"]),
+                "text": caption["full_line"].strip(),
+                "highlighted_word_line": caption["highlighted_word_line"]
             }
         )
 
@@ -100,6 +152,15 @@ def overlay_captions(
             .with_start(caption["start"])
         )
         text_clips.append(text_clip)
+        highlighted_word_clip = (
+            TextClip(
+                **text_clip_defaults, **text_clip_highlight_params, text=caption["highlighted_word_line"]
+            )
+            .with_duration(caption["end"] - caption["start"])
+            .with_position(("center", text_clip_caption_additional_configs["top"]))
+            .with_start(caption["start"])
+        )
+        text_clips.append(highlighted_word_clip)
 
     final_video = None
 
