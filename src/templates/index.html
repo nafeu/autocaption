@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captioned Video Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .upload-area {
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            width: 300px;
+            background-color: #f9f9f9;
+        }
+
+        .upload-area p {
+            margin: 0;
+            color: #666;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        video {
+            margin-top: 20px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Captioned Video Generator</h1>
+    <div id="uploadArea" class="upload-area">
+        <p>Drag and drop a video here, or click to upload</p>
+        <input type="file" id="fileInput" accept="video/mp4" style="display: none;">
+    </div>
+    <div class="error" id="errorMessage"></div>
+    <button id="uploadButton" disabled>Upload and Process</button>
+    <h2>Preview</h2>
+    <video id="videoPreview" controls style="display: none;"></video>
+    <p id="status"></p>
+    <video id="processedPreview" controls style="display: none;"></video>
+
+    <h2>Generated Captions (.vtt)</h2>
+    <textarea id="vttEditor" rows="10" cols="50" style="display: none;"></textarea>
+    <br>
+    <button id="saveVttButton" style="display: none;">Save VTT</button>
+    <button id="reprocessButton" style="display: none;">Re-process Video</button>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const videoPreview = document.getElementById('videoPreview');
+        const processedPreview = document.getElementById('processedPreview');
+        const errorMessage = document.getElementById('errorMessage');
+        const status = document.getElementById('status');
+        let selectedFile = null;
+
+        // Handle drag-and-drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#e3f2fd';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = '#f9f9f9';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            selectedFile = e.dataTransfer.files[0];
+            validateFile(selectedFile);
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            selectedFile = fileInput.files[0];
+            validateFile(selectedFile);
+        });
+
+        function validateFile(file) {
+            // Reset
+            errorMessage.textContent = '';
+            videoPreview.style.display = 'none';
+            processedPreview.style.display = 'none';
+            uploadButton.disabled = true;
+
+            if (!file) return;
+
+            // Check file type
+            if (file.type !== 'video/mp4') {
+                errorMessage.textContent = 'Only MP4 files are allowed.';
+                return;
+            }
+
+            // Check file size (max 100 MB)
+            if (file.size > 100 * 1024 * 1024) {
+                errorMessage.textContent = 'File size exceeds 100 MB.';
+                return;
+            }
+
+            // Validate dimensions
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+
+            video.addEventListener('loadedmetadata', () => {
+                if (video.videoWidth !== 1080 || video.videoHeight !== 1920) {
+                    errorMessage.textContent = 'Video dimensions must be 1080 x 1920.';
+                    return;
+                }
+
+                // Show preview
+                videoPreview.src = video.src;
+                videoPreview.style.display = 'block';
+                uploadButton.disabled = false; // Enable upload button
+            });
+        }
+
+        // Handle upload and processing
+        uploadButton.addEventListener('click', async () => {
+            if (!selectedFile) {
+                alert('Please select a video file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('video', selectedFile);
+
+            status.textContent = 'Processing...';
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    fetchVtt(selectedFile.name);
+                    const processedVideo = `/download/${data.output_file}`;
+                    processedPreview.src = processedVideo;
+                    processedPreview.style.display = 'block';
+                    status.textContent = 'Processing complete! Watch or download the video below.';
+                } else {
+                    status.textContent = `Error: ${data.error}`;
+                }
+            } catch (err) {
+                status.textContent = `Error: ${err.message}`;
+            }
+        });
+
+        const vttEditor = document.getElementById('vttEditor');
+        const saveVttButton = document.getElementById('saveVttButton');
+        const reprocessButton = document.getElementById('reprocessButton');
+
+        let currentFilename = '';
+
+        // Fetch the VTT content
+        async function fetchVtt(filename) {
+            try {
+                const response = await fetch(`/get_vtt/${filename}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    vttEditor.value = data.vtt_content;
+                    vttEditor.style.display = 'block';
+                    saveVttButton.style.display = 'inline';
+                    reprocessButton.style.display = 'inline';
+                    currentFilename = filename;
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        // Save the updated VTT file
+        saveVttButton.addEventListener('click', async () => {
+            const vttContent = vttEditor.value;
+
+            try {
+                const response = await fetch(`/save_vtt/${currentFilename}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vtt_content: vttContent }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        });
+
+        // Re-process the video
+        reprocessButton.addEventListener('click', async () => {
+            try {
+                status.textContent = 'Re-processing video...';
+
+                const response = await fetch(`/reprocess/${currentFilename}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const processedVideo = `/download/${data.output_file}`;
+                    processedPreview.src = processedVideo;
+                    processedPreview.style.display = 'block';
+                    status.textContent = 'Re-processing complete!';
+                } else {
+                    status.textContent = `Error: ${data.error}`;
+                }
+            } catch (err) {
+                status.textContent = `Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

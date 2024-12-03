@@ -3,6 +3,17 @@ from moviepy import VideoFileClip, TextClip, CompositeVideoClip
 import re
 
 
+def get_vtt_path(video_path):
+    """
+    Given a video file path, return the corresponding .vtt file path.
+
+    :param video_path: Full path to the video file (e.g., sample.mp4).
+    :return: Full path to the .vtt file (e.g., sample.vtt).
+    """
+    base_path, _ = os.path.splitext(video_path)  # Split the path and extension
+    return f"{base_path}.vtt"
+
+
 def parse_vtt_with_highlights(vtt_path):
     captions = []
 
@@ -97,7 +108,7 @@ def overlay_captions(
     video_width, video_height = video.size
 
     video_name = os.path.splitext(os.path.basename(video_path))[0]
-    vtt_file_path = f"./{video_name}.vtt"
+    vtt_file_path = get_vtt_path(video_path)
 
     captions = []
     text_clips = []
