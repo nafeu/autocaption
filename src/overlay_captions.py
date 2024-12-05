@@ -20,7 +20,12 @@ def parse_vtt_with_highlights(vtt_path):
     with open(vtt_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
-    current_caption = {"start": None, "end": None, "full_line": "", "highlighted_word_line": ""}
+    current_caption = {
+        "start": None,
+        "end": None,
+        "full_line": "",
+        "highlighted_word_line": "",
+    }
     for line in lines:
         line = line.strip()
 
@@ -30,16 +35,29 @@ def parse_vtt_with_highlights(vtt_path):
             current_caption["end"] = end
 
         elif line == "":
-            if current_caption["start"] and current_caption["end"] and current_caption["full_line"]:
+            if (
+                current_caption["start"]
+                and current_caption["end"]
+                and current_caption["full_line"]
+            ):
                 captions.append(current_caption)
-            current_caption = {"start": None, "end": None, "full_line": "", "highlighted_word_line": ""}
+            current_caption = {
+                "start": None,
+                "end": None,
+                "full_line": "",
+                "highlighted_word_line": "",
+            }
 
         else:
             line_with_highlights, highlighted_word_line = process_highlights(line)
             current_caption["full_line"] += line_with_highlights
             current_caption["highlighted_word_line"] += highlighted_word_line
 
-    if current_caption["start"] and current_caption["end"] and current_caption["full_line"]:
+    if (
+        current_caption["start"]
+        and current_caption["end"]
+        and current_caption["full_line"]
+    ):
         captions.append(current_caption)
 
     return captions
@@ -79,7 +97,7 @@ def create_title_header(
         text_align="center",
         method="caption",
         size=(video_width - int(video_width * 0.2), None),
-        text=text
+        text=text,
     )
 
     text_width, text_height = text_clip.size
@@ -138,7 +156,7 @@ def overlay_captions(
         "text": title_text,
         "top": int(video_height * 0.156),
         "video_width": video_width,
-        "padding": int(video_width * 0.01851)
+        "padding": int(video_width * 0.01851),
     }
 
     text_clip_title_header_additional_configs = {"duration": 5}
@@ -149,7 +167,7 @@ def overlay_captions(
                 "start": time_to_seconds(caption["start"]),
                 "end": time_to_seconds(caption["end"]),
                 "text": caption["full_line"].strip(),
-                "highlighted_word_line": caption["highlighted_word_line"]
+                "highlighted_word_line": caption["highlighted_word_line"],
             }
         )
 
@@ -165,7 +183,9 @@ def overlay_captions(
         text_clips.append(text_clip)
         highlighted_word_clip = (
             TextClip(
-                **text_clip_defaults, **text_clip_highlight_params, text=caption["highlighted_word_line"]
+                **text_clip_defaults,
+                **text_clip_highlight_params,
+                text=caption["highlighted_word_line"],
             )
             .with_duration(caption["end"] - caption["start"])
             .with_position(("center", text_clip_caption_additional_configs["top"]))
@@ -176,9 +196,9 @@ def overlay_captions(
     final_video = None
 
     if len(title_text) > 0:
-        title_header = create_title_header(**text_clip_title_header_params).with_duration(
-            text_clip_title_header_additional_configs["duration"]
-        )
+        title_header = create_title_header(
+            **text_clip_title_header_params
+        ).with_duration(text_clip_title_header_additional_configs["duration"])
         final_video = CompositeVideoClip([video, *text_clips, title_header])
     else:
         final_video = CompositeVideoClip([video, *text_clips])

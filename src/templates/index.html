@@ -1,242 +1,420 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captioned Video Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <title>autocaption | short-form vertical video captioner</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
+      :root {
+        --color-a: #FFF05A;
+        --color-b: #191919;
+        --color-c: #FFD25A;
+        --color-d: #FFAA5A;
+        --color-e: #FF785A;
 
-        .upload-area {
-            margin: 20px auto;
-            padding: 20px;
-            border: 2px dashed #ccc;
-            border-radius: 10px;
-            width: 300px;
-            background-color: #f9f9f9;
-        }
+        --color-primary: var(--color-a);
+        --color-secondary: var(--color-b);
 
-        .upload-area p {
-            margin: 0;
-            color: #666;
-        }
+        --color-background: var(--color-secondary);
+        --color-text: var(--color-primary);
 
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
+        --spacing-l: 20px;
+        --spacing-m: 10px;
+        --spacing-s: 5px;
 
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+        --component-width: 180px;
+        --component-height: 320px;
 
-        video {
-            margin-top: 20px;
-            max-width: 400px;
-        }
+        --border-radius: 5px;
+      }
+
+      body {
+        font-family: "Space Mono", monospace;
+        padding-inline: var(--spacing-m);
+        margin: 0;
+        color: var(--color-text);
+        background-color: var(--color-background);
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .upload-container {
+        display: flex;
+        padding-inline: var(--spacing-m);
+        gap: var(--spacing-m);
+      }
+
+      .logo {
+        font-size: 2rem;
+        font-weight: bold;
+        padding: var(--spacing-m);
+      }
+
+      .logo > path {
+        fill: var(--color-text);
+      }
+
+      .title {
+        color: var(--color-e);
+        padding-inline: var(--spacing-l);
+      }
+
+      .tagline {
+        color: var(--color-c);
+        font-weight: 200;
+        font-size: 1.5rem;
+      }
+
+      .action-container {
+        width: var(--component-width);
+        height: var(--component-height);
+        position: relative;
+        border: 1px solid var(--color-primary);
+        border-radius: var(--border-radius);
+        box-sizing: border-box;
+        padding: var(--spacing-l);
+      }
+
+      .empty-description {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--color-primary);
+      }
+
+      .upload-area {
+        color: var(--color-secondary);
+        background-color: var(--color-primary);
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 200ms ease-in-out all;
+        border: none;
+      }
+
+      .action-type {
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        width: var(--component-width);
+        color: var(--color-primary);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+
+      .upload-area:hover {
+        background-color: var(--color-e);
+      }
+
+      .error {
+        color: red;
+        margin-top: 10px;
+      }
+
+      .preview-upload {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .button {
+        background-color: var(--color-primary);
+        color: var(--color-secondary);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-s);
+        display: flex;
+        justify-content: center;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .button:hover {
+        opacity: 0.75;
+      }
+
+      .button:active {
+        opacity: 0.5;
+      }
+
+      .button.disabled {
+        opacity: 0.25;
+        cursor: default;
+      }
+
+      .button-small {
+        padding: var(--spacing-s);
+        font-size: 0.75rem;
+        margin-bottom: var(--spacing-m);
+      }
+
+      .configurations {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .edit-vtt {
+        padding: var(--spacing-m);
+      }
+
+      .vtt-editor {
+        display: block;
+        width: 100%;
+        resize: none;
+        height: 225px;
+        background-color: var(--color-secondary);
+        border: none;
+        color: var(--color-primary);
+        border-radius: var(--border-radius);
+        font-family: 'Space Mono', monospace;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      .vtt-editor::-webkit-scrollbar {
+        display: none;
+      }
+
+      .preview-final {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      video {
+        width: calc(var(--component-width) - 6px);
+        height: calc(var(--component-height) - 6px);
+        border-radius: var(--border-radius);
+      }
     </style>
-</head>
-<body>
-    <h1>Captioned Video Generator</h1>
-    <div id="uploadArea" class="upload-area">
-        <p>Drag and drop a video here, or click to upload</p>
-        <input type="file" id="fileInput" accept="video/mp4" style="display: none;">
-    </div>
-    <div class="error" id="errorMessage"></div>
-    <button id="uploadButton" disabled>Upload and Process</button>
-    <h2>Preview</h2>
-    <video id="videoPreview" controls style="display: none;"></video>
-    <p id="status"></p>
-    <video id="processedPreview" controls style="display: none;"></video>
+  </head>
 
-    <h2>Generated Captions (.vtt)</h2>
-    <textarea id="vttEditor" rows="10" cols="50" style="display: none;"></textarea>
-    <br>
-    <button id="saveVttButton" style="display: none;">Save VTT</button>
-    <button id="reprocessButton" style="display: none;">Re-process Video</button>
+  <body>
+    <div class="app-container">
+      <div class="logo">
+        autocaption
+        <span class="tagline">short-form vertical video captioner</span>
+      </div>
+      <div class="upload-container">
+        <div id="uploadArea" class="upload-area action-container">
+          <p>Drag and drop a video here, or click to upload.</p>
+          <input type="file" id="fileInput" accept="video/mp4" style="display: none;">
+          <div class="action-type">Pick Video</div>
+        </div>
+
+        <div id="previewUpload" class="preview-upload action-container">
+          <p id="videoPreviewEmpty" class="empty-description">Upload a video to see the original here.</p>
+          <video id="videoPreview" controls style="display: none;"></video>
+          <div class="action-type">Preview Original</div>
+        </div>
+
+        <div id="configurations" class="configurations action-container">
+          <div class="error" id="errorMessage"></div>
+          <div id="generateButton" class="button disabled">Generate Captions</div>
+          <div class="action-type">Configure Generator</div>
+        </div>
+
+        <div id="editVtt" class="edit-vtt action-container">
+          <textarea id="vttEditor" class="vtt-editor" rows="10" cols="50" style="display: none;"></textarea>
+          <div id="saveVttButton" class="button button-small" style="display: none;">Save VTT</div>
+          <div id="reprocessButton" class="button button-small" style="display: none;">Re-process Video</div>
+          <div class="action-type">Edit Captions</div>
+        </div>
+
+        <div id="previewFinal" class="preview-final action-container">
+          <p id="status"></p>
+          <video id="processedPreview" controls style="display: none;"></video>
+          <div class="action-type">Preview Final</div>
+        </div>
+      </div>
+    </div>
 
     <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const uploadButton = document.getElementById('uploadButton');
-        const videoPreview = document.getElementById('videoPreview');
-        const processedPreview = document.getElementById('processedPreview');
-        const errorMessage = document.getElementById('errorMessage');
-        const status = document.getElementById('status');
-        let selectedFile = null;
+      const ONE_HUNDRED_MB = 100 * 1024 * 1024
 
-        // Handle drag-and-drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.style.backgroundColor = '#e3f2fd';
-        });
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const generateButton = document.getElementById('generateButton');
+      const videoPreview = document.getElementById('videoPreview');
+      const videoPreviewEmpty = document.getElementById('videoPreviewEmpty');
+      const processedPreview = document.getElementById('processedPreview');
+      const errorMessage = document.getElementById('errorMessage');
+      const status = document.getElementById('status');
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.style.backgroundColor = '#f9f9f9';
-        });
+      let selectedFile = null;
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            selectedFile = e.dataTransfer.files[0];
-            validateFile(selectedFile);
-        });
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.backgroundColor = '#191919';
+        uploadArea.style.color = '#FFF05A';
+        uploadArea.style.border = '1px dotted #FFF05A'
+      });
 
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.backgroundColor = '#FFF05A';
+      });
 
-        fileInput.addEventListener('change', () => {
-            selectedFile = fileInput.files[0];
-            validateFile(selectedFile);
-        });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        selectedFile = e.dataTransfer.files[0];
+        validateFile(selectedFile);
+      });
 
-        function validateFile(file) {
-            // Reset
-            errorMessage.textContent = '';
-            videoPreview.style.display = 'none';
-            processedPreview.style.display = 'none';
-            uploadButton.disabled = true;
+      uploadArea.addEventListener('click', () => {
+        fileInput.click();
+      });
 
-            if (!file) return;
+      fileInput.addEventListener('change', () => {
+        selectedFile = fileInput.files[0];
+        validateFile(selectedFile);
+      });
 
-            // Check file type
-            if (file.type !== 'video/mp4') {
-                errorMessage.textContent = 'Only MP4 files are allowed.';
-                return;
-            }
+      function validateFile(file) {
+        errorMessage.textContent = '';
+        videoPreview.style.display = 'none';
+        processedPreview.style.display = 'none';
+        generateButton.classList.add('disabled');
 
-            // Check file size (max 100 MB)
-            if (file.size > 100 * 1024 * 1024) {
-                errorMessage.textContent = 'File size exceeds 100 MB.';
-                return;
-            }
+        if (!file) return;
 
-            // Validate dimensions
-            const video = document.createElement('video');
-            video.src = URL.createObjectURL(file);
-
-            video.addEventListener('loadedmetadata', () => {
-                if (video.videoWidth !== 1080 || video.videoHeight !== 1920) {
-                    errorMessage.textContent = 'Video dimensions must be 1080 x 1920.';
-                    return;
-                }
-
-                // Show preview
-                videoPreview.src = video.src;
-                videoPreview.style.display = 'block';
-                uploadButton.disabled = false; // Enable upload button
-            });
+        if (file.type !== 'video/mp4') {
+          errorMessage.textContent = 'Only MP4 files are allowed.';
+          return;
         }
 
-        // Handle upload and processing
-        uploadButton.addEventListener('click', async () => {
-            if (!selectedFile) {
-                alert('Please select a video file first!');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('video', selectedFile);
-
-            status.textContent = 'Processing...';
-
-            try {
-                const response = await fetch('/process', {
-                    method: 'POST',
-                    body: formData,
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    fetchVtt(selectedFile.name);
-                    const processedVideo = `/download/${data.output_file}`;
-                    processedPreview.src = processedVideo;
-                    processedPreview.style.display = 'block';
-                    status.textContent = 'Processing complete! Watch or download the video below.';
-                } else {
-                    status.textContent = `Error: ${data.error}`;
-                }
-            } catch (err) {
-                status.textContent = `Error: ${err.message}`;
-            }
-        });
-
-        const vttEditor = document.getElementById('vttEditor');
-        const saveVttButton = document.getElementById('saveVttButton');
-        const reprocessButton = document.getElementById('reprocessButton');
-
-        let currentFilename = '';
-
-        // Fetch the VTT content
-        async function fetchVtt(filename) {
-            try {
-                const response = await fetch(`/get_vtt/${filename}`);
-                const data = await response.json();
-
-                if (response.ok) {
-                    vttEditor.value = data.vtt_content;
-                    vttEditor.style.display = 'block';
-                    saveVttButton.style.display = 'inline';
-                    reprocessButton.style.display = 'inline';
-                    currentFilename = filename;
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            } catch (err) {
-                alert(`Error: ${err.message}`);
-            }
+        if (file.size > ONE_HUNDRED_MB) {
+          errorMessage.textContent = 'File size exceeds 100 MB.';
+          return;
         }
 
-        // Save the updated VTT file
-        saveVttButton.addEventListener('click', async () => {
-            const vttContent = vttEditor.value;
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.addEventListener('loadedmetadata', () => {
+          if (video.videoWidth !== 1080 || video.videoHeight !== 1920) {
+            errorMessage.textContent = 'Video dimensions must be 1080 x 1920.';
+            return;
+          }
 
-            try {
-                const response = await fetch(`/save_vtt/${currentFilename}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ vtt_content: vttContent }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert(data.message);
-                } else {
-                    alert(`Error: ${data.error}`);
-                }
-            } catch (err) {
-                alert(`Error: ${err.message}`);
-            }
+          videoPreview.src = video.src;
+          videoPreview.style.display = 'block';
+          videoPreviewEmpty.style.display = 'none';
+          generateButton.classList.remove('disabled');
         });
+      }
 
-        // Re-process the video
-        reprocessButton.addEventListener('click', async () => {
-            try {
-                status.textContent = 'Re-processing video...';
+      generateButton.addEventListener('click', async () => {
+        if (!selectedFile) {
+          alert('Please select a video file first!');
+          return;
+        }
+        const formData = new FormData();
+        formData.append('video', selectedFile);
+        status.textContent = 'Processing...';
+        generateButton.classList.add('disabled');
 
-                const response = await fetch(`/reprocess/${currentFilename}`, { method: 'POST' });
-                const data = await response.json();
+        try {
+          const response = await fetch('/process', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await response.json();
+          if (response.ok) {
+            fetchVtt(selectedFile.name);
+            const processedVideo = `/download/${data.output_file}`;
+            processedPreview.src = processedVideo;
+            processedPreview.style.display = 'block';
+            status.style.display = 'none';
+            generateButton.classList.remove('disabled');
+          } else {
+            status.textContent = `Error: ${data.error}`;
+            generateButton.classList.remove('disabled');
+          }
+        } catch (err) {
+          status.textContent = `Error: ${err.message}`;
+          generateButton.classList.remove('disabled');
+        }
+      });
 
-                if (response.ok) {
-                    const processedVideo = `/download/${data.output_file}`;
-                    processedPreview.src = processedVideo;
-                    processedPreview.style.display = 'block';
-                    status.textContent = 'Re-processing complete!';
-                } else {
-                    status.textContent = `Error: ${data.error}`;
-                }
-            } catch (err) {
-                status.textContent = `Error: ${err.message}`;
-            }
-        });
+      const vttEditor = document.getElementById('vttEditor');
+      const saveVttButton = document.getElementById('saveVttButton');
+      const reprocessButton = document.getElementById('reprocessButton');
+
+      let currentFilename = '';
+
+      async function fetchVtt(filename) {
+        try {
+          const response = await fetch(`/get_vtt/${filename}`);
+          const data = await response.json();
+          if (response.ok) {
+            vttEditor.value = data.vtt_content;
+            vttEditor.style.display = 'block';
+            saveVttButton.style.display = 'block';
+            reprocessButton.style.display = 'block';
+            currentFilename = filename;
+          } else {
+            alert(`Error: ${data.error}`);
+          }
+        } catch (err) {
+          alert(`Error: ${err.message}`);
+        }
+      }
+
+      saveVttButton.addEventListener('click', async () => {
+        const vttContent = vttEditor.value;
+        try {
+          const response = await fetch(`/save_vtt/${currentFilename}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              vtt_content: vttContent
+            }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            alert(data.message);
+          } else {
+            alert(`Error: ${data.error}`);
+          }
+        } catch (err) {
+          alert(`Error: ${err.message}`);
+        }
+      });
+
+      reprocessButton.addEventListener('click', async () => {
+        try {
+          status.style.display = 'block';
+          status.textContent = 'Re-processing video...';
+          processedPreview.style.display = null;
+
+          const response = await fetch(`/reprocess/${currentFilename}`, {
+            method: 'POST'
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            const processedVideo = `/download/${data.output_file}`;
+            processedPreview.src = processedVideo;
+            processedPreview.style.display = 'block';
+            status.style.display = 'none';
+          } else {
+            status.textContent = `Error: ${data.error}`;
+          }
+        } catch (err) {
+          status.textContent = `Error: ${err.message}`;
+        }
+      });
     </script>
-</body>
+  </body>
 </html>
