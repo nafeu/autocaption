@@ -225,6 +225,98 @@
         background: rgba(255, 240, 90, 0.1);
         border-color: var(--color-a);
       }
+
+      /* —— Text-based transcript editor —— */
+      .transcript-editor-wrap {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space);
+      }
+
+      .transcript-editor {
+        flex: 1;
+        min-height: 120px;
+        overflow-y: auto;
+        padding: var(--space);
+        background: var(--color-bg);
+        border: 1px solid rgba(255, 240, 90, 0.2);
+        font-family: "Space Mono", monospace;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        color: var(--color-fg);
+      }
+
+      .transcript-editor:focus {
+        outline: none;
+        border-color: var(--color-a);
+      }
+
+      .transcript-hint {
+        font-size: 0.7rem;
+        color: var(--color-muted);
+        margin-bottom: 4px;
+      }
+
+      .transcript-chip {
+        display: inline;
+        cursor: pointer;
+        padding: 2px 4px;
+        margin: 0 1px;
+        border-radius: 3px;
+        transition: background 0.15s, color 0.15s, opacity 0.15s;
+      }
+
+      .transcript-chip:hover {
+        background: rgba(255, 240, 90, 0.15);
+      }
+
+      .transcript-chip.silence {
+        color: var(--color-muted);
+        font-style: italic;
+      }
+
+      .transcript-chip.deleted {
+        opacity: 0.5;
+        text-decoration: line-through;
+        color: var(--color-muted);
+      }
+
+      .transcript-chip.deleted:hover {
+        background: rgba(255, 120, 90, 0.15);
+      }
+
+      .transcript-empty {
+        color: var(--color-muted);
+        font-style: italic;
+      }
+
+      .btn-rerender {
+        background: var(--color-e);
+        color: var(--color-b);
+      }
+
+      .btn-rerender:hover:not(:disabled) {
+        background: #ff9060;
+      }
+
+      .vtt-raw-wrap {
+        margin-top: 4px;
+      }
+
+      .vtt-raw-wrap summary {
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .vtt-raw-wrap summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .vtt-raw-wrap .vtt-textarea {
+        margin-top: 6px;
+      }
     </style>
   </head>
   <body>
@@ -244,22 +336,42 @@
       </main>
 
       <aside class="sidebar">
-        <div>
-          <div class="sidebar-title">Captions</div>
-          <textarea
-            id="vttEditor"
-            class="vtt-textarea"
-            placeholder="Generated captions will appear here…"
-            spellcheck="false"
-          ></textarea>
-        </div>
-        <div class="actions">
-          <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
-            <i class="fas fa-redo-alt"></i> Reprocess video
-          </button>
-          <button type="button" id="saveVttBtn" class="btn" disabled>
-            <i class="fas fa-save"></i> Save VTT
-          </button>
+        <div class="transcript-editor-wrap">
+          <div>
+            <div class="sidebar-title">Transcript (text-based editor)</div>
+            <p class="transcript-hint" id="transcriptHint">Click a word or … to remove it from the video. Click again to restore.</p>
+            <div
+              id="transcriptEditor"
+              class="transcript-editor"
+              tabindex="0"
+              role="document"
+              aria-label="Transcript editor"
+            ></div>
+            <div id="transcriptPlaceholder" class="transcript-empty">
+              Process a video to see the transcript.
+            </div>
+          </div>
+          <details class="vtt-raw-wrap">
+            <summary class="sidebar-title">Raw VTT</summary>
+            <textarea
+              id="vttEditor"
+              class="vtt-textarea"
+              placeholder="Generated captions (VTT)…"
+              spellcheck="false"
+              rows="4"
+            ></textarea>
+          </details>
+          <div class="actions">
+            <button type="button" id="rerenderBtn" class="btn btn-rerender" disabled title="Re-render video with removed segments">
+              <i class="fas fa-cut"></i> Re-render video
+            </button>
+            <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
+              <i class="fas fa-redo-alt"></i> Reprocess video
+            </button>
+            <button type="button" id="saveVttBtn" class="btn" disabled>
+              <i class="fas fa-save"></i> Save VTT
+            </button>
+          </div>
         </div>
       </aside>
     </div>
@@ -274,11 +386,16 @@
       const videoPreview = document.getElementById("videoPreview");
       const statusEl = document.getElementById("status");
       const vttEditor = document.getElementById("vttEditor");
+      const transcriptEditor = document.getElementById("transcriptEditor");
+      const transcriptPlaceholder = document.getElementById("transcriptPlaceholder");
       const reprocessBtn = document.getElementById("reprocessBtn");
       const saveVttBtn = document.getElementById("saveVttBtn");
+      const rerenderBtn = document.getElementById("rerenderBtn");
 
       let currentFile = null;
       let currentFilename = "";
+      let transcriptSegments = [];
+      let deletedIds = new Set();
 
       function setStatus(msg, type = "") {
         statusEl.textContent = msg;
@@ -335,6 +452,7 @@
 
           clearStatus();
           await loadVtt(currentFilename);
+          await loadTranscript(currentFilename);
           videoPreview.src = "/download/" + data.output_file;
           reprocessBtn.disabled = false;
           saveVttBtn.disabled = false;
@@ -354,6 +472,73 @@
           }
         } catch (err) {
           setStatus("Could not load captions.", "error");
+        }
+      }
+
+      function renderTranscript(segments) {
+        transcriptSegments = segments || [];
+        deletedIds = new Set();
+        if (transcriptSegments.length === 0) {
+          transcriptPlaceholder.style.display = "block";
+          transcriptEditor.style.display = "none";
+          transcriptEditor.innerHTML = "";
+          rerenderBtn.disabled = true;
+          return;
+        }
+        transcriptPlaceholder.style.display = "none";
+        transcriptEditor.style.display = "block";
+        transcriptEditor.innerHTML = "";
+        transcriptSegments.forEach((seg) => {
+          const span = document.createElement("span");
+          span.className = "transcript-chip " + (seg.type === "silence" ? "silence" : "");
+          span.textContent = seg.text;
+          span.dataset.id = String(seg.id);
+          span.dataset.start = String(seg.start);
+          span.dataset.end = String(seg.end);
+          span.setAttribute("role", "button");
+          span.setAttribute("tabindex", "0");
+          span.setAttribute("aria-label", seg.type === "silence" ? "Silence " + seg.start + "–" + seg.end + "s. Click to remove from video." : seg.text + " " + seg.start + "–" + seg.end + "s. Click to remove from video.");
+          span.addEventListener("click", () => toggleSegmentDeleted(seg.id));
+          span.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              toggleSegmentDeleted(seg.id);
+            }
+          });
+          transcriptEditor.appendChild(span);
+          transcriptEditor.appendChild(document.createTextNode(" "));
+        });
+        rerenderBtn.disabled = true;
+      }
+
+      function toggleSegmentDeleted(id) {
+        if (deletedIds.has(id)) {
+          deletedIds.delete(id);
+        } else {
+          deletedIds.add(id);
+        }
+        updateChipStyles();
+        rerenderBtn.disabled = deletedIds.size === 0;
+      }
+
+      function updateChipStyles() {
+        transcriptEditor.querySelectorAll(".transcript-chip").forEach((el) => {
+          const id = parseInt(el.dataset.id, 10);
+          el.classList.toggle("deleted", deletedIds.has(id));
+        });
+      }
+
+      async function loadTranscript(filename) {
+        try {
+          const res = await fetch("/get_transcript/" + encodeURIComponent(filename));
+          const data = await res.json();
+          if (res.ok && data.segments && data.segments.length) {
+            renderTranscript(data.segments);
+          } else {
+            renderTranscript([]);
+          }
+        } catch (err) {
+          renderTranscript([]);
         }
       }
 
@@ -420,6 +605,33 @@
           setStatus("Error: " + err.message, "error");
         }
         reprocessBtn.disabled = false;
+      });
+
+      rerenderBtn.addEventListener("click", async () => {
+        if (!currentFilename || deletedIds.size === 0) return;
+        setStatus("Re-rendering video (cutting removed segments)…", "loading");
+        rerenderBtn.disabled = true;
+        try {
+          const res = await fetch("/reprocess_edited/" + encodeURIComponent(currentFilename), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ deleted_ids: Array.from(deletedIds) }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            clearStatus();
+            if (data.output_file) {
+              videoPreview.src = "/download/" + data.output_file + "?t=" + Date.now();
+            } else {
+              setStatus("No cuts to apply.", "");
+            }
+          } else {
+            setStatus("Error: " + (data.error || "Re-render failed"), "error");
+          }
+        } catch (err) {
+          setStatus("Error: " + err.message, "error");
+        }
+        rerenderBtn.disabled = false;
       });
     </script>
   </body>
