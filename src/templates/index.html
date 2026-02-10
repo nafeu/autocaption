@@ -1,638 +1,708 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>autocaption</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-      :root {
-        --color-a: #FFF05A;
-        --color-b: #191919;
-        --color-c: #FFD25A;
-        --color-d: #FFAA5A;
-        --color-e: #FF785A;
-        --color-bg: var(--color-b);
-        --color-fg: var(--color-a);
-        --color-muted: var(--color-c);
-        --color-accent: var(--color-e);
-        --space: 12px;
-        --sidebar-width: 320px;
-      }
 
-      * {
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>autocaption</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --color-a: #FFF05A;
+      --color-b: #191919;
+      --color-c: #FFD25A;
+      --color-d: #FFAA5A;
+      --color-e: #FF785A;
+      --color-bg: var(--color-b);
+      --color-fg: var(--color-a);
+      --color-muted: var(--color-c);
+      --color-accent: var(--color-e);
+      --space: 12px;
+      --sidebar-width: 320px;
+    }
 
-      body {
-        margin: 0;
-        font-family: "Space Mono", monospace;
-        background: var(--color-bg);
-        color: var(--color-fg);
-        min-height: 100vh;
-        overflow: hidden;
-      }
+    * {
+      box-sizing: border-box;
+    }
 
-      .layout {
-        display: flex;
-        height: 100vh;
-      }
+    body {
+      margin: 0;
+      font-family: "Space Mono", monospace;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      min-height: 100vh;
+      overflow: hidden;
+    }
 
-      /* —— Left: dropzone + video preview —— */
-      .main-pane {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: var(--space);
-      }
+    .layout {
+      display: flex;
+      height: 100vh;
+    }
 
-      .main-pane-center {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        min-height: 0;
-        width: 100%;
-      }
+    /* —— Left: dropzone + video preview —— */
+    .main-pane {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space);
+      position: relative;
+    }
 
-      .dropzone {
-        width: 100%;
-        max-width: 720px;
-        aspect-ratio: 9 / 16;
-        max-height: 100%;
-        border: 2px dashed var(--color-fg);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space);
-        cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
-        background: rgba(255, 240, 90, 0.03);
-      }
+    .main-pane-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
 
-      .dropzone:hover,
-      .dropzone.dragover {
-        border-color: var(--color-e);
-        background: rgba(255, 120, 90, 0.06);
-      }
+    .main-pane .status {
+      position: absolute;
+      bottom: var(--space);
+      left: var(--space);
+      right: var(--space);
+      text-align: center;
+    }
 
-      .dropzone i {
-        font-size: 2.5rem;
-        opacity: 0.8;
-      }
+    .dropzone {
+      width: 100%;
+      max-width: 720px;
+      aspect-ratio: 9 / 16;
+      max-height: 100%;
+      border: 2px dashed var(--color-fg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(255, 240, 90, 0.03);
+    }
 
-      .dropzone span {
-        font-size: 0.9rem;
-        color: var(--color-muted);
-      }
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--color-e);
+      background: rgba(255, 120, 90, 0.06);
+    }
 
-      .dropzone input {
-        display: none;
-      }
+    .dropzone i {
+      font-size: 2.5rem;
+      opacity: 0.8;
+      as
+    }
 
-      .video-wrap {
-        width: 100%;
-        max-width: 720px;
-        aspect-ratio: 9 / 16;
-        max-height: 100%;
-        background: #000;
-        overflow: hidden;
-        display: none;
-      }
+    .dropzone span {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+    }
 
-      .video-wrap.visible {
-        display: block;
-      }
+    .dropzone input {
+      display: none;
+    }
 
-      .video-wrap video {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      aspect-ratio: 9 / 16;
+      max-height: 100%;
+      background: #000;
+      overflow: hidden;
+      display: none;
+    }
 
-      .main-pane .status {
-        margin-top: var(--space);
-        font-size: 0.85rem;
-        color: var(--color-muted);
-        min-height: 1.2em;
-      }
+    .video-wrap.visible {
+      display: block;
+    }
 
-      .main-pane .status.error {
-        color: var(--color-e);
-      }
+    .video-wrap.video-loading::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      pointer-events: auto;
+      cursor: wait;
+    }
 
-      .main-pane .status.loading {
-        color: var(--color-c);
-      }
+    .video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-      /* —— Right: toolbar —— */
-      .sidebar {
-        width: var(--sidebar-width);
-        flex-shrink: 0;
-        background: rgba(0, 0, 0, 0.25);
-        border-left: 1px solid rgba(255, 240, 90, 0.15);
-        display: flex;
-        flex-direction: column;
-        padding: var(--space);
-        gap: var(--space);
-      }
+    .main-pane .status {
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      min-height: 1.2em;
+    }
 
-      .sidebar-title {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--color-muted);
-        margin-bottom: 4px;
-      }
+    .main-pane .status.error {
+      color: var(--color-e);
+    }
 
-      .vtt-textarea {
-        flex: 1;
-        min-height: 120px;
-        width: 100%;
-        padding: var(--space);
-        background: var(--color-bg);
-        border: 1px solid rgba(255, 240, 90, 0.2);
-        color: var(--color-fg);
-        font-family: "Space Mono", monospace;
-        font-size: 0.8rem;
-        resize: none;
-        outline: none;
-      }
+    .main-pane .status.loading {
+      color: var(--color-c);
+    }
 
-      .vtt-textarea::placeholder {
-        color: var(--color-muted);
-        opacity: 0.6;
-      }
+    /* —— Right: toolbar —— */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 1px solid rgba(255, 240, 90, 0.15);
+      display: flex;
+      flex-direction: column;
+      padding: var(--space);
+      gap: var(--space);
+    }
 
-      .vtt-textarea:focus {
-        border-color: var(--color-a);
-      }
+    .sidebar-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-muted);
+      margin-bottom: 4px;
+    }
 
-      .actions {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
+    .vtt-textarea {
+      flex: 1;
+      min-height: 120px;
+      width: 100%;
+      padding: var(--space);
+      background: var(--color-bg);
+      border: 1px solid rgba(255, 240, 90, 0.2);
+      color: var(--color-fg);
+      font-family: "Space Mono", monospace;
+      font-size: 0.8rem;
+      resize: none;
+      outline: none;
+    }
 
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px var(--space);
-        font-family: inherit;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--color-b);
-        background: var(--color-a);
-        border: none;
-        cursor: pointer;
-        transition: background 0.2s, opacity 0.2s;
-      }
+    .vtt-textarea::placeholder {
+      color: var(--color-muted);
+      opacity: 0.6;
+    }
 
-      .btn:hover {
-        background: var(--color-c);
-      }
+    .vtt-textarea:focus {
+      border-color: var(--color-a);
+    }
 
-      .btn:active {
-        opacity: 0.9;
-      }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-      .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px var(--space);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-b);
+      background: var(--color-a);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
 
-      .btn i {
-        font-size: 0.9rem;
-      }
+    .btn:hover {
+      background: var(--color-c);
+    }
 
-      .btn-secondary {
-        background: transparent;
-        color: var(--color-fg);
-        border: 1px solid rgba(255, 240, 90, 0.4);
-      }
+    .btn:active {
+      opacity: 0.9;
+    }
 
-      .btn-secondary:hover:not(:disabled) {
-        background: rgba(255, 240, 90, 0.1);
-        border-color: var(--color-a);
-      }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
-      /* —— Text-based transcript editor —— */
-      .transcript-editor-wrap {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: var(--space);
-      }
+    .btn i {
+      font-size: 0.9rem;
+    }
 
-      .transcript-editor {
-        flex: 1;
-        min-height: 120px;
-        overflow-y: auto;
-        padding: var(--space);
-        background: var(--color-bg);
-        border: 1px solid rgba(255, 240, 90, 0.2);
-        font-family: "Space Mono", monospace;
-        font-size: 0.85rem;
-        line-height: 1.6;
-        color: var(--color-fg);
-      }
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-fg);
+      border: 1px solid rgba(255, 240, 90, 0.4);
+    }
 
-      .transcript-editor:focus {
-        outline: none;
-        border-color: var(--color-a);
-      }
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 240, 90, 0.1);
+      border-color: var(--color-a);
+    }
 
-      .transcript-hint {
-        font-size: 0.7rem;
-        color: var(--color-muted);
-        margin-bottom: 4px;
-      }
+    /* —— Text-based transcript editor —— */
+    .transcript-editor-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space);
+    }
 
-      .transcript-chip {
-        display: inline;
-        cursor: pointer;
-        padding: 2px 4px;
-        margin: 0 1px;
-        border-radius: 3px;
-        transition: background 0.15s, color 0.15s, opacity 0.15s;
-      }
+    .transcript-editor {
+      flex: 1;
+      min-height: 120px;
+      overflow-y: auto;
+      padding: var(--space);
+      background: var(--color-bg);
+      border: 1px solid rgba(255, 240, 90, 0.2);
+      font-family: "Space Mono", monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--color-fg);
+    }
 
-      .transcript-chip:hover {
-        background: rgba(255, 240, 90, 0.15);
-      }
+    .transcript-editor:focus {
+      outline: none;
+      border-color: var(--color-a);
+    }
 
-      .transcript-chip.silence {
-        color: var(--color-muted);
-        font-style: italic;
-      }
+    .transcript-hint {
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      margin-bottom: 4px;
+    }
 
-      .transcript-chip.deleted {
-        opacity: 0.5;
-        text-decoration: line-through;
-        color: var(--color-muted);
-      }
+    .transcript-chip {
+      display: inline;
+      cursor: pointer;
+      padding: 2px 4px;
+      margin: 0 1px;
+      border-radius: 3px;
+      transition: background 0.15s, color 0.15s, opacity 0.15s;
+    }
 
-      .transcript-chip.deleted:hover {
-        background: rgba(255, 120, 90, 0.15);
-      }
+    .transcript-chip:hover {
+      background: rgba(255, 240, 90, 0.15);
+    }
 
-      .transcript-empty {
-        color: var(--color-muted);
-        font-style: italic;
-      }
+    .transcript-chip.silence {
+      color: var(--color-muted);
+      font-style: italic;
+    }
 
-      .btn-rerender {
-        background: var(--color-e);
-        color: var(--color-b);
-      }
+    .transcript-chip.deleted {
+      opacity: 0.5;
+      text-decoration: line-through;
+      color: var(--color-muted);
+    }
 
-      .btn-rerender:hover:not(:disabled) {
-        background: #ff9060;
-      }
+    .transcript-chip.deleted:hover {
+      background: rgba(255, 120, 90, 0.15);
+    }
 
-      .vtt-raw-wrap {
-        margin-top: 4px;
-      }
+    .transcript-empty {
+      color: var(--color-muted);
+      font-style: italic;
+    }
 
-      .vtt-raw-wrap summary {
-        cursor: pointer;
-        list-style: none;
-      }
+    .btn-rerender {
+      background: var(--color-e);
+      color: var(--color-b);
+    }
 
-      .vtt-raw-wrap summary::-webkit-details-marker {
-        display: none;
-      }
+    .btn-rerender:hover:not(:disabled) {
+      background: #ff9060;
+    }
 
-      .vtt-raw-wrap .vtt-textarea {
-        margin-top: 6px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="layout">
-      <main class="main-pane">
-        <div class="main-pane-center">
-          <div id="dropzone" class="dropzone">
-            <input type="file" id="fileInput" accept="video/mp4">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <span>Drop video here or click to browse</span>
-          </div>
-          <div id="videoWrap" class="video-wrap">
-            <video id="videoPreview" controls></video>
+    .vtt-raw-wrap {
+      margin-top: 4px;
+    }
+
+    .vtt-raw-wrap summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .vtt-raw-wrap summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .vtt-raw-wrap .vtt-textarea {
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <main class="main-pane">
+      <div class="main-pane-center">
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="fileInput" accept="video/mp4">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>Drop video here or click to browse</span>
+        </div>
+        <div id="videoWrap" class="video-wrap">
+          <video id="videoPreview" controls></video>
+        </div>
+      </div>
+      <p id="status" class="status" aria-live="polite"></p>
+    </main>
+
+    <aside class="sidebar">
+      <div class="transcript-editor-wrap">
+        <div>
+          <div class="sidebar-title">Transcript (text-based editor)</div>
+          <p class="transcript-hint" id="transcriptHint">Click a word or … to remove it from the video. Click again to
+            restore.</p>
+          <div id="transcriptEditor" class="transcript-editor" tabindex="0" role="document"
+            aria-label="Transcript editor"></div>
+          <div id="transcriptPlaceholder" class="transcript-empty">
+            Process a video to see the transcript.
           </div>
         </div>
-        <p id="status" class="status" aria-live="polite"></p>
-      </main>
-
-      <aside class="sidebar">
-        <div class="transcript-editor-wrap">
-          <div>
-            <div class="sidebar-title">Transcript (text-based editor)</div>
-            <p class="transcript-hint" id="transcriptHint">Click a word or … to remove it from the video. Click again to restore.</p>
-            <div
-              id="transcriptEditor"
-              class="transcript-editor"
-              tabindex="0"
-              role="document"
-              aria-label="Transcript editor"
-            ></div>
-            <div id="transcriptPlaceholder" class="transcript-empty">
-              Process a video to see the transcript.
-            </div>
-          </div>
-          <details class="vtt-raw-wrap">
-            <summary class="sidebar-title">Raw VTT</summary>
-            <textarea
-              id="vttEditor"
-              class="vtt-textarea"
-              placeholder="Generated captions (VTT)…"
-              spellcheck="false"
-              rows="4"
-            ></textarea>
-          </details>
-          <div class="actions">
-            <button type="button" id="rerenderBtn" class="btn btn-rerender" disabled title="Re-render video with removed segments">
-              <i class="fas fa-cut"></i> Re-render video
-            </button>
-            <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
-              <i class="fas fa-redo-alt"></i> Reprocess video
-            </button>
-            <button type="button" id="saveVttBtn" class="btn" disabled>
-              <i class="fas fa-save"></i> Save VTT
-            </button>
-          </div>
+        <details class="vtt-raw-wrap">
+          <summary class="sidebar-title">Raw VTT</summary>
+          <textarea id="vttEditor" class="vtt-textarea" placeholder="Generated captions (VTT)…" spellcheck="false"
+            rows="4"></textarea>
+        </details>
+        <div class="actions">
+          <button type="button" id="selectFillersBtn" class="btn btn-secondary" disabled
+            title="Mark common filler words (um, uh, ah, hmm, etc.) for removal">
+            <i class="fas fa-magic"></i> Select filler words
+          </button>
+          <button type="button" id="rerenderBtn" class="btn btn-rerender" disabled
+            title="Re-render video with removed segments">
+            <i class="fas fa-cut"></i> Re-render video
+          </button>
+          <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
+            <i class="fas fa-redo-alt"></i> Reprocess video
+          </button>
+          <button type="button" id="saveVttBtn" class="btn" disabled>
+            <i class="fas fa-save"></i> Save VTT
+          </button>
         </div>
-      </aside>
-    </div>
+      </div>
+    </aside>
+  </div>
 
-    <script>
-      const MAX_SIZE_MB = 100;
-      const MAX_SIZE = MAX_SIZE_MB * 1024 * 1024;
+  <script>
+    const MAX_SIZE_MB = 100;
+    const MAX_SIZE = MAX_SIZE_MB * 1024 * 1024;
 
-      const dropzone = document.getElementById("dropzone");
-      const fileInput = document.getElementById("fileInput");
-      const videoWrap = document.getElementById("videoWrap");
-      const videoPreview = document.getElementById("videoPreview");
-      const statusEl = document.getElementById("status");
-      const vttEditor = document.getElementById("vttEditor");
-      const transcriptEditor = document.getElementById("transcriptEditor");
-      const transcriptPlaceholder = document.getElementById("transcriptPlaceholder");
-      const reprocessBtn = document.getElementById("reprocessBtn");
-      const saveVttBtn = document.getElementById("saveVttBtn");
-      const rerenderBtn = document.getElementById("rerenderBtn");
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const videoWrap = document.getElementById("videoWrap");
+    const videoPreview = document.getElementById("videoPreview");
+    const statusEl = document.getElementById("status");
+    const vttEditor = document.getElementById("vttEditor");
+    const transcriptEditor = document.getElementById("transcriptEditor");
+    const transcriptPlaceholder = document.getElementById("transcriptPlaceholder");
+    const reprocessBtn = document.getElementById("reprocessBtn");
+    const saveVttBtn = document.getElementById("saveVttBtn");
+    const rerenderBtn = document.getElementById("rerenderBtn");
+    const selectFillersBtn = document.getElementById("selectFillersBtn");
 
-      let currentFile = null;
-      let currentFilename = "";
-      let transcriptSegments = [];
-      let deletedIds = new Set();
+    const FILLER_WORDS = new Set([
+      "um", "umm", "uh", "uhh", "uhhh", "ah", "hmm", "hm", "hmmm", "er", "eh",
+    ]);
 
-      function setStatus(msg, type = "") {
-        statusEl.textContent = msg;
-        statusEl.className = "status" + (type ? " " + type : "");
+    let currentFile = null;
+    let currentFilename = "";
+    let transcriptSegments = [];
+    let deletedIds = new Set();
+
+    function setStatus(msg, type = "") {
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function clearStatus() {
+      setStatus("");
+    }
+
+    function setVideoLoading(loading) {
+      videoWrap.classList.toggle("video-loading", loading);
+      if (loading) {
+        videoPreview.pause();
       }
+    }
 
-      function clearStatus() {
-        setStatus("");
+    function showDropzone() {
+      dropzone.style.display = "flex";
+      videoWrap.classList.remove("visible");
+    }
+
+    function showVideo(url) {
+      dropzone.style.display = "none";
+      videoWrap.classList.add("visible");
+      videoPreview.src = url;
+    }
+
+    function validateFile(file) {
+      if (!file) return null;
+      if (file.type !== "video/mp4") {
+        setStatus("Only MP4 files are allowed.", "error");
+        return null;
       }
-
-      function showDropzone() {
-        dropzone.style.display = "flex";
-        videoWrap.classList.remove("visible");
+      if (file.size > MAX_SIZE) {
+        setStatus(`File must be under ${MAX_SIZE_MB} MB.`, "error");
+        return null;
       }
+      return file;
+    }
 
-      function showVideo(url) {
-        dropzone.style.display = "none";
-        videoWrap.classList.add("visible");
-        videoPreview.src = url;
-      }
+    async function processVideo(file) {
+      currentFile = file;
+      currentFilename = file.name;
+      showVideo(URL.createObjectURL(file));
+      setStatus("Generating captions…", "loading");
+      setVideoLoading(true);
+      reprocessBtn.disabled = true;
+      saveVttBtn.disabled = true;
 
-      function validateFile(file) {
-        if (!file) return null;
-        if (file.type !== "video/mp4") {
-          setStatus("Only MP4 files are allowed.", "error");
-          return null;
-        }
-        if (file.size > MAX_SIZE) {
-          setStatus(`File must be under ${MAX_SIZE_MB} MB.`, "error");
-          return null;
-        }
-        return file;
-      }
+      const formData = new FormData();
+      formData.append("video", file);
 
-      async function processVideo(file) {
-        currentFile = file;
-        currentFilename = file.name;
-        showVideo(URL.createObjectURL(file));
-        setStatus("Generating captions…", "loading");
-        reprocessBtn.disabled = true;
-        saveVttBtn.disabled = true;
+      try {
+        const res = await fetch("/process", { method: "POST", body: formData });
+        const data = await res.json();
 
-        const formData = new FormData();
-        formData.append("video", file);
-
-        try {
-          const res = await fetch("/process", { method: "POST", body: formData });
-          const data = await res.json();
-
-          if (!res.ok) {
-            setStatus("Error: " + (data.error || res.statusText), "error");
-            return;
-          }
-
-          clearStatus();
-          await loadVtt(currentFilename);
-          await loadTranscript(currentFilename);
-          videoPreview.src = "/download/" + data.output_file;
-          reprocessBtn.disabled = false;
-          saveVttBtn.disabled = false;
-        } catch (err) {
-          setStatus("Error: " + err.message, "error");
-          reprocessBtn.disabled = false;
-          saveVttBtn.disabled = false;
-        }
-      }
-
-      async function loadVtt(filename) {
-        try {
-          const res = await fetch("/get_vtt/" + encodeURIComponent(filename));
-          const data = await res.json();
-          if (res.ok) {
-            vttEditor.value = data.vtt_content || "";
-          }
-        } catch (err) {
-          setStatus("Could not load captions.", "error");
-        }
-      }
-
-      function renderTranscript(segments) {
-        transcriptSegments = segments || [];
-        deletedIds = new Set();
-        if (transcriptSegments.length === 0) {
-          transcriptPlaceholder.style.display = "block";
-          transcriptEditor.style.display = "none";
-          transcriptEditor.innerHTML = "";
-          rerenderBtn.disabled = true;
+        if (!res.ok) {
+          setStatus("Error: " + (data.error || res.statusText), "error");
           return;
         }
-        transcriptPlaceholder.style.display = "none";
-        transcriptEditor.style.display = "block";
-        transcriptEditor.innerHTML = "";
-        transcriptSegments.forEach((seg) => {
-          const span = document.createElement("span");
-          span.className = "transcript-chip " + (seg.type === "silence" ? "silence" : "");
-          span.textContent = seg.text;
-          span.dataset.id = String(seg.id);
-          span.dataset.start = String(seg.start);
-          span.dataset.end = String(seg.end);
-          span.setAttribute("role", "button");
-          span.setAttribute("tabindex", "0");
-          span.setAttribute("aria-label", seg.type === "silence" ? "Silence " + seg.start + "–" + seg.end + "s. Click to remove from video." : seg.text + " " + seg.start + "–" + seg.end + "s. Click to remove from video.");
-          span.addEventListener("click", () => toggleSegmentDeleted(seg.id));
-          span.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggleSegmentDeleted(seg.id);
-            }
-          });
-          transcriptEditor.appendChild(span);
-          transcriptEditor.appendChild(document.createTextNode(" "));
-        });
-        rerenderBtn.disabled = true;
-      }
 
-      function toggleSegmentDeleted(id) {
-        if (deletedIds.has(id)) {
-          deletedIds.delete(id);
-        } else {
-          deletedIds.add(id);
+        clearStatus();
+        await loadVtt(currentFilename);
+        await loadTranscript(currentFilename);
+        videoPreview.src = "/download/" + data.output_file;
+        reprocessBtn.disabled = false;
+        saveVttBtn.disabled = false;
+      } catch (err) {
+        setStatus("Error: " + err.message, "error");
+        reprocessBtn.disabled = false;
+        saveVttBtn.disabled = false;
+      } finally {
+        setVideoLoading(false);
+      }
+    }
+
+    async function loadVtt(filename) {
+      try {
+        const res = await fetch("/get_vtt/" + encodeURIComponent(filename));
+        const data = await res.json();
+        if (res.ok) {
+          vttEditor.value = data.vtt_content || "";
         }
-        updateChipStyles();
-        rerenderBtn.disabled = deletedIds.size === 0;
+      } catch (err) {
+        setStatus("Could not load captions.", "error");
       }
+    }
 
-      function updateChipStyles() {
-        transcriptEditor.querySelectorAll(".transcript-chip").forEach((el) => {
-          const id = parseInt(el.dataset.id, 10);
-          el.classList.toggle("deleted", deletedIds.has(id));
-        });
+    function renderTranscript(segments) {
+      transcriptSegments = segments || [];
+      deletedIds = new Set();
+      if (transcriptSegments.length === 0) {
+        transcriptPlaceholder.style.display = "block";
+        transcriptEditor.style.display = "none";
+        transcriptEditor.innerHTML = "";
+        rerenderBtn.disabled = true;
+        selectFillersBtn.disabled = true;
+        return;
       }
-
-      async function loadTranscript(filename) {
-        try {
-          const res = await fetch("/get_transcript/" + encodeURIComponent(filename));
-          const data = await res.json();
-          if (res.ok && data.segments && data.segments.length) {
-            renderTranscript(data.segments);
-          } else {
-            renderTranscript([]);
+      transcriptPlaceholder.style.display = "none";
+      transcriptEditor.style.display = "block";
+      transcriptEditor.innerHTML = "";
+      transcriptSegments.forEach((seg) => {
+        const span = document.createElement("span");
+        span.className = "transcript-chip " + (seg.type === "silence" ? "silence" : "");
+        span.textContent = seg.text;
+        span.dataset.id = String(seg.id);
+        span.dataset.start = String(seg.start);
+        span.dataset.end = String(seg.end);
+        span.setAttribute("role", "button");
+        span.setAttribute("tabindex", "0");
+        span.setAttribute("aria-label", seg.type === "silence" ? "Silence " + seg.start + "–" + seg.end + "s. Click to remove from video." : seg.text + " " + seg.start + "–" + seg.end + "s. Click to remove from video.");
+        span.addEventListener("click", () => toggleSegmentDeleted(seg.id));
+        span.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleSegmentDeleted(seg.id);
           }
-        } catch (err) {
+        });
+        transcriptEditor.appendChild(span);
+        transcriptEditor.appendChild(document.createTextNode(" "));
+      });
+      rerenderBtn.disabled = false;
+      selectFillersBtn.disabled = false;
+    }
+
+    function selectFillerWords() {
+      let count = 0;
+      for (const seg of transcriptSegments) {
+        if (seg.type !== "word") continue;
+        const normalized = seg.text.trim().toLowerCase().replace(/[.,!?;:'"]+$/, "");
+        if (FILLER_WORDS.has(normalized)) {
+          deletedIds.add(seg.id);
+          count++;
+        }
+      }
+      updateChipStyles();
+      if (count > 0) {
+        setStatus(`${count} filler word${count === 1 ? "" : "s"} selected for removal.`, "loading");
+        setTimeout(clearStatus, 2500);
+      } else {
+        setStatus("No filler words found in transcript.", "");
+        setTimeout(clearStatus, 2000);
+      }
+    }
+
+    function toggleSegmentDeleted(id) {
+      if (deletedIds.has(id)) {
+        deletedIds.delete(id);
+      } else {
+        deletedIds.add(id);
+      }
+      updateChipStyles();
+    }
+
+    function updateChipStyles() {
+      transcriptEditor.querySelectorAll(".transcript-chip").forEach((el) => {
+        const id = parseInt(el.dataset.id, 10);
+        el.classList.toggle("deleted", deletedIds.has(id));
+      });
+    }
+
+    async function loadTranscript(filename) {
+      try {
+        const res = await fetch("/get_transcript/" + encodeURIComponent(filename));
+        const data = await res.json();
+        if (res.ok && data.segments && data.segments.length) {
+          renderTranscript(data.segments);
+        } else {
           renderTranscript([]);
         }
+      } catch (err) {
+        renderTranscript([]);
       }
+    }
 
-      function onFileSelected(file) {
-        const valid = validateFile(file);
-        if (!valid) return;
-        processVideo(valid);
+    function onFileSelected(file) {
+      const valid = validateFile(file);
+      if (!valid) return;
+      processVideo(valid);
+    }
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) onFileSelected(file);
+    });
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (file) onFileSelected(file);
+      fileInput.value = "";
+    });
+
+    saveVttBtn.addEventListener("click", async () => {
+      if (!currentFilename) return;
+      try {
+        const res = await fetch("/save_vtt/" + encodeURIComponent(currentFilename), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vtt_content: vttEditor.value }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setStatus("VTT saved.", "loading");
+          setTimeout(clearStatus, 1500);
+        } else {
+          setStatus("Error: " + (data.error || "Save failed"), "error");
+        }
+      } catch (err) {
+        setStatus("Error: " + err.message, "error");
       }
+    });
 
-      dropzone.addEventListener("click", () => fileInput.click());
-      dropzone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropzone.classList.add("dragover");
-      });
-      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
-      dropzone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropzone.classList.remove("dragover");
-        const file = e.dataTransfer.files[0];
-        if (file) onFileSelected(file);
-      });
-      fileInput.addEventListener("change", () => {
-        const file = fileInput.files[0];
-        if (file) onFileSelected(file);
-        fileInput.value = "";
-      });
-
-      saveVttBtn.addEventListener("click", async () => {
-        if (!currentFilename) return;
-        try {
-          const res = await fetch("/save_vtt/" + encodeURIComponent(currentFilename), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ vtt_content: vttEditor.value }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            setStatus("VTT saved.", "loading");
-            setTimeout(clearStatus, 1500);
-          } else {
-            setStatus("Error: " + (data.error || "Save failed"), "error");
-          }
-        } catch (err) {
-          setStatus("Error: " + err.message, "error");
+    reprocessBtn.addEventListener("click", async () => {
+      if (!currentFilename) return;
+      setStatus("Re-processing…", "loading");
+      setVideoLoading(true);
+      reprocessBtn.disabled = true;
+      try {
+        const res = await fetch("/reprocess/" + encodeURIComponent(currentFilename), {
+          method: "POST",
+        });
+        const data = await res.json();
+        if (res.ok) {
+          clearStatus();
+          videoPreview.src = "/download/" + data.output_file;
+        } else {
+          setStatus("Error: " + (data.error || "Reprocess failed"), "error");
         }
-      });
-
-      reprocessBtn.addEventListener("click", async () => {
-        if (!currentFilename) return;
-        setStatus("Re-processing…", "loading");
-        reprocessBtn.disabled = true;
-        try {
-          const res = await fetch("/reprocess/" + encodeURIComponent(currentFilename), {
-            method: "POST",
-          });
-          const data = await res.json();
-          if (res.ok) {
-            clearStatus();
-            videoPreview.src = "/download/" + data.output_file;
-          } else {
-            setStatus("Error: " + (data.error || "Reprocess failed"), "error");
-          }
-        } catch (err) {
-          setStatus("Error: " + err.message, "error");
-        }
+      } catch (err) {
+        setStatus("Error: " + err.message, "error");
+      } finally {
         reprocessBtn.disabled = false;
+        setVideoLoading(false);
+      }
+    });
+
+      selectFillersBtn.addEventListener("click", () => {
+        if (transcriptSegments.length === 0) return;
+        selectFillerWords();
       });
 
       rerenderBtn.addEventListener("click", async () => {
-        if (!currentFilename || deletedIds.size === 0) return;
-        setStatus("Re-rendering video (cutting removed segments)…", "loading");
-        rerenderBtn.disabled = true;
-        try {
-          const res = await fetch("/reprocess_edited/" + encodeURIComponent(currentFilename), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ deleted_ids: Array.from(deletedIds) }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            clearStatus();
-            if (data.output_file) {
-              videoPreview.src = "/download/" + data.output_file + "?t=" + Date.now();
-            } else {
-              setStatus("No cuts to apply.", "");
-            }
+        if (!currentFilename) return;
+        setStatus(
+        deletedIds.size > 0
+          ? "Re-rendering video (cutting removed segments)…"
+          : "Re-rendering full video…",
+        "loading"
+      );
+      setVideoLoading(true);
+      rerenderBtn.disabled = true;
+      try {
+        const res = await fetch("/reprocess_edited/" + encodeURIComponent(currentFilename), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deleted_ids: Array.from(deletedIds) }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          clearStatus();
+          if (data.output_file) {
+            videoPreview.src = "/download/" + data.output_file + "?t=" + Date.now();
           } else {
-            setStatus("Error: " + (data.error || "Re-render failed"), "error");
+            setStatus("No cuts to apply.", "");
           }
-        } catch (err) {
-          setStatus("Error: " + err.message, "error");
+        } else {
+          setStatus("Error: " + (data.error || "Re-render failed"), "error");
         }
+      } catch (err) {
+        setStatus("Error: " + err.message, "error");
+      } finally {
         rerenderBtn.disabled = false;
-      });
-    </script>
-  </body>
+        setVideoLoading(false);
+      }
+    });
+  </script>
+</body>
+
 </html>

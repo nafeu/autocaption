@@ -146,13 +146,22 @@ def reprocess_edited(filename):
         data = load_transcript(transcript_path)
         segments = data.get("segments", [])
         cut_ranges = compute_cut_ranges(segments, deleted_ids)
-        if not cut_ranges:
-            return jsonify({"message": "No cuts to apply", "output_file": None}), 200
-
         output_filename = f"edited_{filename}"
         final_output_path = os.path.join(
             app.config["PROCESSED_FOLDER"], output_filename
         )
+
+        if not cut_ranges:
+            # No deletions: output full captioned video (same as reprocess)
+            overlay_captions(video_path, final_output_path)
+            return jsonify(
+                {
+                    "message": "Video re-rendered (full video with captions)",
+                    "output_file": output_filename,
+                    "cut_ranges": [],
+                }
+            )
+
         base, _ = os.path.splitext(filename)
         captioned_temp_filename = f"edited_{base}_captioned.mp4"
         captioned_temp_path = os.path.join(
