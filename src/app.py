@@ -1,4 +1,5 @@
 import os
+import socket
 from flask import Flask, request, jsonify, render_template, send_file
 from werkzeug.utils import secure_filename
 from generate_captions import generate_captions
@@ -270,5 +271,20 @@ def reprocess_edited(filename):
         return jsonify({"error": str(e)}), 500
 
 
+def find_free_port(start=5000, end=5010):
+    """Return the first port in [start, end) that is not in use."""
+    for port in range(start, end):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(("", port))
+                return port
+        except OSError:
+            continue
+    return start  # fallback
+
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 0)) or find_free_port()
+    url = f"http://localhost:{port}"
+    print(f" * Running at {url}")
+    app.run(debug=True, host="0.0.0.0", port=port)

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Launch script: ensure venv, run Flask server, open browser to localhost:5000
+# Launch script: ensure venv, find a free port, run Flask server, open browser
 
 set -e
 cd "$(dirname "$0")"
-PORT=5000
-URL="http://localhost:${PORT}"
 
 # Create venv if missing
 if [ ! -d "venv" ]; then
@@ -15,6 +13,23 @@ fi
 # Activate and install deps
 source venv/bin/activate
 pip install -q -r requirements.txt
+
+# Find first free port in 5000..5010
+PORT=$(python3 -c "
+import socket
+for port in range(5000, 5010):
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('', port))
+            print(port)
+            break
+    except OSError:
+        continue
+else:
+    print(5000)
+")
+export PORT
+URL="http://localhost:${PORT}"
 
 # Start server in background
 echo "Starting server at ${URL} ..."

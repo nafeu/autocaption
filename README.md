@@ -1,10 +1,10 @@
 # autocaption
 
-![autocaption demo](docs/screenshots/demo.png)
-
 Text-based video editor that auto-generates captions and lets you trim and export short-form vertical video.
 
 [![Join the Discord](https://img.shields.io/discord/1358944581873307871?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/BysAyRje57) [![Support on Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/phrakture)
+
+![autocaption demo](docs/screenshots/demo.png)
 
 ## Features
 
