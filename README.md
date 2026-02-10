@@ -1,12 +1,10 @@
 # autocaption
 
-A text-based video editor that generates captions from speech and lets you edit the video by editing the transcript. Trim your clip, then caption it with word-level timestamps—remove words or filler (um, uh, hmm) and re-render so those segments are cut from the final video.
+![autocaption demo](docs/screenshots/demo.png)
 
-![autocaption — Trim stage](docs/screenshots/trim-stage.png)
-<!-- TODO: Add screenshot of the Trim stage -->
+Text-based video editor that auto-generates captions and lets you trim and export short-form vertical video.
 
-![autocaption — Caption stage](docs/screenshots/caption-stage.png)
-<!-- TODO: Add screenshot of the Caption stage -->
+[![Join the Discord](https://img.shields.io/discord/1358944581873307871?label=discord&logo=discord&style=for-the-badge)](https://discord.gg/BysAyRje57) [![Support on Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/phrakture)
 
 ## Features
 
@@ -14,14 +12,12 @@ A text-based video editor that generates captions from speech and lets you edit 
 - **Caption stage**: [OpenAI Whisper](https://github.com/openai/whisper) transcribes the video with word-level timestamps. A word-level transcript is built (words plus silence segments as “…”) and saved for editing.
 - **Text-based editing**: Click any word or silence in the transcript to mark it for removal. Use “Select filler words” to auto-mark common fillers (um, uh, ah, hmm, etc.). Re-render to produce a new video with those segments cut out.
 - **Captions on output**: Captions (with per-word highlight) are overlaid using the original VTT; trimming is applied last so the final video has correct captions and no removed content.
-- **Download**: Save the current captioned/edited video to a chosen location (Save As dialog where supported, otherwise browser download).
 
 ## How it works
 
 1. **Trim** (optional): Upload a video → optional trim via timeline handles → continue to Caption.
 2. **Caption**: The app runs Whisper on the (possibly trimmed) video, generates a VTT and a word-level JSON transcript. Captions are overlaid with MoviePy and shown in the UI.
 3. **Edit**: You see the transcript as clickable chips. Click to mark segments for removal; “Select filler words” marks common fillers. “Re-render video” cuts those segments from the captioned video (captions are applied first, then cuts) and updates the preview.
-4. **Download**: Use “Download Video” to save the current result (with Save As where the browser supports it).
 
 Backend: Flask. Trimming and cutting: MoviePy. Transcription: OpenAI Whisper. Caption overlay: MoviePy TextClips.
 
@@ -126,16 +122,6 @@ autocaption/
 │   └── screenshots/    # Place screenshots here (see README placeholders)
 └── ...
 ```
-
-## Screenshots
-
-Add your screenshots under `docs/screenshots/` and reference them in this section, for example:
-
-| Trim stage | Caption stage |
-|------------|---------------|
-| ![Trim](docs/screenshots/trim-stage.png) | ![Caption](docs/screenshots/caption-stage.png) |
-
-<!-- TODO: Add your screenshots to docs/screenshots/ and update the paths above if needed -->
 
 ## License
 
