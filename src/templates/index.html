@@ -40,7 +40,249 @@
 
     .layout {
       display: flex;
+      flex-direction: column;
       height: 100vh;
+    }
+
+    .stage-nav {
+      flex-shrink: 0;
+      display: flex;
+      gap: 0;
+      background: rgba(0, 0, 0, 0.35);
+      border-bottom: 1px solid rgba(255, 240, 90, 0.15);
+      padding: 0 var(--space);
+    }
+
+    .stage-nav button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--color-muted);
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .stage-nav button:hover {
+      color: var(--color-fg);
+    }
+
+    .stage-nav button.active {
+      color: var(--color-a);
+      border-bottom-color: var(--color-a);
+    }
+
+    .stage-nav button i {
+      font-size: 1rem;
+    }
+
+    .stage-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+    }
+
+    .stage-content {
+      display: none;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .stage-content.active {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .stage-content .main-pane {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .stage-content .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+    }
+
+    /* —— Trim stage: main + trim sidebar —— */
+    .main-trim,
+    .sidebar-trim {
+      display: none;
+    }
+
+    .stage-content.active .main-trim,
+    .stage-content.active .sidebar-trim {
+      display: flex;
+    }
+
+    /* —— Caption stage: main + caption sidebar —— */
+    .main-caption,
+    .sidebar-caption {
+      display: none;
+    }
+
+    .stage-content.active .main-caption,
+    .stage-content.active .sidebar-caption {
+      display: flex;
+    }
+
+    .trim-controls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space);
+      margin-bottom: var(--space);
+    }
+
+    /* —— Interactive trim timeline (below video) —— */
+    .trim-timeline-wrap {
+      width: 100%;
+      max-width: 720px;
+      margin-top: var(--space);
+      display: none;
+    }
+
+    .trim-timeline-wrap.visible {
+      display: block;
+    }
+
+    .trim-timeline-label {
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      margin-bottom: 6px;
+    }
+
+    .trim-timeline {
+      position: relative;
+      height: 56px;
+      background: var(--color-bg);
+      border: 1px solid rgba(255, 240, 90, 0.25);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .trim-track {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      pointer-events: none;
+    }
+
+    .trim-track img {
+      flex: 1;
+      height: 100%;
+      object-fit: cover;
+      min-width: 0;
+    }
+
+    .trim-range-mask {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .trim-mask-side {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: rgba(0, 0, 0, 0.6);
+      transition: width 0.05s, left 0.05s;
+    }
+
+    #trimMaskLeft {
+      left: 0;
+    }
+
+    #trimMaskRight {
+      right: 0;
+      left: auto;
+    }
+
+    .trim-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 14px;
+      margin-left: -7px;
+      background: var(--color-a);
+      border: 2px solid var(--color-b);
+      border-radius: 3px;
+      cursor: ew-resize;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-b);
+      font-size: 0.65rem;
+    }
+
+    .trim-handle:hover {
+      background: var(--color-c);
+    }
+
+    .trim-handle-left { left: 0; }
+    .trim-handle-right { left: 100%; }
+
+    .trim-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-8px);
+      width: 120px;
+      background: var(--color-b);
+      border: 1px solid rgba(255, 240, 90, 0.3);
+      border-radius: 4px;
+      padding: 4px;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .trim-handle.dragging .trim-tooltip,
+    .trim-handle:hover .trim-tooltip {
+      display: block;
+    }
+
+    .trim-tooltip img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 2px;
+    }
+
+    .trim-tooltip-time {
+      font-size: 0.7rem;
+      color: var(--color-muted);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .trim-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: var(--space);
+    }
+
+    .btn-continue {
+      background: var(--color-e);
+      color: var(--color-b);
+    }
+
+    .btn-continue:hover:not(:disabled) {
+      background: #ff9060;
     }
 
     /* —— Left: dropzone + video preview —— */
@@ -97,7 +339,6 @@
     .dropzone i {
       font-size: 2.5rem;
       opacity: 0.8;
-      as
     }
 
     .dropzone span {
@@ -121,6 +362,10 @@
     }
 
     .video-wrap.visible {
+      display: block;
+    }
+
+    #captionVideoWrap.visible {
       display: block;
     }
 
@@ -342,55 +587,109 @@
 
 <body>
   <div class="layout">
-    <main class="main-pane">
-      <div class="main-pane-center">
-        <div id="dropzone" class="dropzone">
-          <input type="file" id="fileInput" accept="video/mp4">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <span>Drop video here or click to browse</span>
-        </div>
-        <div id="videoWrap" class="video-wrap">
-          <video id="videoPreview" controls></video>
-        </div>
-      </div>
-      <p id="status" class="status" aria-live="polite"></p>
-    </main>
+    <nav class="stage-nav" role="tablist">
+      <button type="button" id="tabTrim" class="active" role="tab" aria-selected="true" aria-controls="stageTrim">
+        <i class="fas fa-cut"></i> Trim
+      </button>
+      <button type="button" id="tabCaption" role="tab" aria-selected="false" aria-controls="stageCaption">
+        <i class="fas fa-closed-captioning"></i> Caption
+      </button>
+    </nav>
 
-    <aside class="sidebar">
-      <div class="transcript-editor-wrap">
-        <div>
-          <div class="sidebar-title">Transcript (text-based editor)</div>
-          <p class="transcript-hint" id="transcriptHint">Click a word or … to remove it from the video. Click again to
-            restore.</p>
-          <div id="transcriptEditor" class="transcript-editor" tabindex="0" role="document"
-            aria-label="Transcript editor"></div>
-          <div id="transcriptPlaceholder" class="transcript-empty">
-            Process a video to see the transcript.
+    <div class="stage-body">
+      <!-- Stage 1: Trim -->
+      <div id="stageTrim" class="stage-content active" role="tabpanel">
+        <main class="main-pane main-trim">
+          <div class="main-pane-center">
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="fileInput" accept="video/*">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Drop video here or click to browse</span>
+            </div>
+            <div id="trimVideoWrap" class="video-wrap">
+              <video id="trimVideoPreview" controls></video>
+            </div>
+            <div id="trimTimelineWrap" class="trim-timeline-wrap">
+              <div class="trim-timeline-label">Drag the handles to set the part of the video to keep</div>
+              <div id="trimTimeline" class="trim-timeline">
+                <div id="trimTrack" class="trim-track"></div>
+                <div id="trimRangeMask" class="trim-range-mask">
+                  <div id="trimMaskLeft" class="trim-mask-side"></div>
+                  <div id="trimMaskRight" class="trim-mask-side"></div>
+                </div>
+                <div id="trimHandleLeft" class="trim-handle trim-handle-left" role="slider" aria-valuemin="0" aria-valuemax="100" aria-label="Trim start">
+                  <div class="trim-tooltip">
+                    <img id="trimTooltipLeftImg" src="" alt="">
+                    <div class="trim-tooltip-time" id="trimTooltipLeftTime">0:00</div>
+                  </div>
+                </div>
+                <div id="trimHandleRight" class="trim-handle trim-handle-right" role="slider" aria-valuemin="0" aria-valuemax="100" aria-label="Trim end">
+                  <div class="trim-tooltip">
+                    <img id="trimTooltipRightImg" src="" alt="">
+                    <div class="trim-tooltip-time" id="trimTooltipRightTime">0:00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <video id="trimThumbVideo" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;" muted playsinline></video>
           </div>
-        </div>
-        <details class="vtt-raw-wrap">
-          <summary class="sidebar-title">Raw VTT</summary>
-          <textarea id="vttEditor" class="vtt-textarea" placeholder="Generated captions (VTT)…" spellcheck="false"
-            rows="4"></textarea>
-        </details>
-        <div class="actions">
-          <button type="button" id="selectFillersBtn" class="btn btn-secondary" disabled
-            title="Mark common filler words (um, uh, ah, hmm, etc.) for removal">
-            <i class="fas fa-magic"></i> Select filler words
-          </button>
-          <button type="button" id="rerenderBtn" class="btn btn-rerender" disabled
-            title="Re-render video with removed segments">
-            <i class="fas fa-cut"></i> Re-render video
-          </button>
-          <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
-            <i class="fas fa-redo-alt"></i> Reprocess video
-          </button>
-          <button type="button" id="saveVttBtn" class="btn" disabled>
-            <i class="fas fa-save"></i> Save VTT
-          </button>
-        </div>
+          <p id="trimStatus" class="status" aria-live="polite"></p>
+        </main>
+        <aside class="sidebar sidebar-trim">
+          <div class="sidebar-title">Trim (optional)</div>
+          <p class="transcript-hint">Drag the left and right handles on the timeline below the video to choose the segment to keep.</p>
+          <div id="trimControls" class="trim-controls" style="display: none;"></div>
+          <div class="trim-actions">
+            <button type="button" id="trimApplyBtn" class="btn btn-secondary" disabled>
+              <i class="fas fa-cut"></i> Apply trim
+            </button>
+            <button type="button" id="continueToCaptionBtn" class="btn btn-continue" disabled>
+              <i class="fas fa-arrow-right"></i> Continue to Caption
+            </button>
+          </div>
+        </aside>
       </div>
-    </aside>
+
+      <!-- Stage 2: Caption -->
+      <div id="stageCaption" class="stage-content" role="tabpanel">
+        <main class="main-pane main-caption">
+          <div class="main-pane-center">
+            <div id="captionVideoWrap" class="video-wrap">
+              <video id="videoPreview" controls></video>
+            </div>
+          </div>
+          <p id="status" class="status" aria-live="polite"></p>
+        </main>
+        <aside class="sidebar sidebar-caption">
+          <div class="transcript-editor-wrap">
+            <div>
+              <div class="sidebar-title">Transcript (text-based editor)</div>
+              <p class="transcript-hint" id="transcriptHint">Click a word or … to remove it from the video. Click again to restore.</p>
+              <div id="transcriptEditor" class="transcript-editor" tabindex="0" role="document" aria-label="Transcript editor"></div>
+              <div id="transcriptPlaceholder" class="transcript-empty">Process a video to see the transcript.</div>
+            </div>
+            <details class="vtt-raw-wrap">
+              <summary class="sidebar-title">Raw VTT</summary>
+              <textarea id="vttEditor" class="vtt-textarea" placeholder="Generated captions (VTT)…" spellcheck="false" rows="4"></textarea>
+            </details>
+            <div class="actions">
+              <button type="button" id="selectFillersBtn" class="btn btn-secondary" disabled title="Mark common filler words (um, uh, ah, hmm, etc.) for removal">
+                <i class="fas fa-magic"></i> Select filler words
+              </button>
+              <button type="button" id="rerenderBtn" class="btn btn-rerender" disabled title="Re-render video with removed segments">
+                <i class="fas fa-cut"></i> Re-render video
+              </button>
+              <button type="button" id="reprocessBtn" class="btn btn-secondary" disabled>
+                <i class="fas fa-redo-alt"></i> Reprocess video
+              </button>
+              <button type="button" id="saveVttBtn" class="btn" disabled>
+                <i class="fas fa-save"></i> Save VTT
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -399,7 +698,29 @@
 
     const dropzone = document.getElementById("dropzone");
     const fileInput = document.getElementById("fileInput");
-    const videoWrap = document.getElementById("videoWrap");
+    const trimVideoWrap = document.getElementById("trimVideoWrap");
+    const trimVideoPreview = document.getElementById("trimVideoPreview");
+    const trimStatus = document.getElementById("trimStatus");
+    const trimTimelineWrap = document.getElementById("trimTimelineWrap");
+    const trimTimeline = document.getElementById("trimTimeline");
+    const trimTrack = document.getElementById("trimTrack");
+    const trimMaskLeft = document.getElementById("trimMaskLeft");
+    const trimMaskRight = document.getElementById("trimMaskRight");
+    const trimHandleLeft = document.getElementById("trimHandleLeft");
+    const trimHandleRight = document.getElementById("trimHandleRight");
+    const trimThumbVideo = document.getElementById("trimThumbVideo");
+    const trimTooltipLeftImg = document.getElementById("trimTooltipLeftImg");
+    const trimTooltipRightImg = document.getElementById("trimTooltipRightImg");
+    const trimTooltipLeftTime = document.getElementById("trimTooltipLeftTime");
+    const trimTooltipRightTime = document.getElementById("trimTooltipRightTime");
+    const trimControls = document.getElementById("trimControls");
+    const trimApplyBtn = document.getElementById("trimApplyBtn");
+    const continueToCaptionBtn = document.getElementById("continueToCaptionBtn");
+    const tabTrim = document.getElementById("tabTrim");
+    const tabCaption = document.getElementById("tabCaption");
+    const stageTrim = document.getElementById("stageTrim");
+    const stageCaption = document.getElementById("stageCaption");
+    const captionVideoWrap = document.getElementById("captionVideoWrap");
     const videoPreview = document.getElementById("videoPreview");
     const statusEl = document.getElementById("status");
     const vttEditor = document.getElementById("vttEditor");
@@ -414,8 +735,13 @@
       "um", "umm", "uh", "uhh", "uhhh", "ah", "hmm", "hm", "hmmm", "er", "eh",
     ]);
 
-    let currentFile = null;
     let currentFilename = "";
+    let videoDuration = 0;
+    let trimStartSeconds = 0;
+    let trimEndSeconds = 0;
+    let trimThumbnails = [];
+    let trimDragging = null;
+    let trimPlaybackSyncWired = false;
     let transcriptSegments = [];
     let deletedIds = new Set();
 
@@ -424,74 +750,362 @@
       statusEl.className = "status" + (type ? " " + type : "");
     }
 
+    function setTrimStatus(msg, type = "") {
+      trimStatus.textContent = msg;
+      trimStatus.className = "status" + (type ? " " + type : "");
+    }
+
     function clearStatus() {
       setStatus("");
     }
 
-    function setVideoLoading(loading) {
-      videoWrap.classList.toggle("video-loading", loading);
-      if (loading) {
-        videoPreview.pause();
-      }
+    function setCaptionVideoLoading(loading) {
+      captionVideoWrap.classList.toggle("video-loading", loading);
+      if (loading) videoPreview.pause();
     }
 
-    function showDropzone() {
+    function setTrimVideoLoading(loading) {
+      trimVideoWrap.classList.toggle("video-loading", loading);
+      if (loading) trimVideoPreview.pause();
+    }
+
+    function showStage(stageName) {
+      const isTrim = stageName === "trim";
+      stageTrim.classList.toggle("active", isTrim);
+      stageCaption.classList.toggle("active", !isTrim);
+      tabTrim.classList.toggle("active", isTrim);
+      tabCaption.classList.toggle("active", !isTrim);
+      tabTrim.setAttribute("aria-selected", isTrim ? "true" : "false");
+      tabCaption.setAttribute("aria-selected", !isTrim ? "true" : "false");
+    }
+
+    function showTrimDropzone() {
       dropzone.style.display = "flex";
-      videoWrap.classList.remove("visible");
+      trimVideoWrap.classList.remove("visible");
+      trimTimelineWrap.classList.remove("visible");
     }
 
-    function showVideo(url) {
+    function showTrimVideo(url) {
       dropzone.style.display = "none";
-      videoWrap.classList.add("visible");
-      videoPreview.src = url;
+      trimVideoWrap.classList.add("visible");
+      trimVideoPreview.src = url;
     }
 
     function validateFile(file) {
       if (!file) return null;
-      if (file.type !== "video/mp4") {
-        setStatus("Only MP4 files are allowed.", "error");
+      if (!file.type.startsWith("video/")) {
+        setTrimStatus("Please select a video file.", "error");
         return null;
       }
       if (file.size > MAX_SIZE) {
-        setStatus(`File must be under ${MAX_SIZE_MB} MB.`, "error");
+        setTrimStatus(`File must be under ${MAX_SIZE_MB} MB.`, "error");
         return null;
       }
       return file;
     }
 
-    async function processVideo(file) {
-      currentFile = file;
-      currentFilename = file.name;
-      showVideo(URL.createObjectURL(file));
-      setStatus("Generating captions…", "loading");
-      setVideoLoading(true);
-      reprocessBtn.disabled = true;
-      saveVttBtn.disabled = true;
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return m + ":" + (s < 10 ? "0" : "") + s;
+    }
 
+    function trimTimeToThumbIndex(t) {
+      if (trimThumbnails.length === 0) return 0;
+      const p = Math.max(0, Math.min(1, t / videoDuration));
+      return Math.min(trimThumbnails.length - 1, Math.floor(p * trimThumbnails.length));
+    }
+
+    function updateTrimTooltip(handle, seconds) {
+      const idx = trimTimeToThumbIndex(seconds);
+      const img = handle === "left" ? trimTooltipLeftImg : trimTooltipRightImg;
+      const timeEl = handle === "left" ? trimTooltipLeftTime : trimTooltipRightTime;
+      if (trimThumbnails[idx]) img.src = trimThumbnails[idx];
+      timeEl.textContent = formatTime(seconds);
+    }
+
+    function updateTrimMask() {
+      const w = trimTimeline.offsetWidth;
+      const leftPct = (trimStartSeconds / videoDuration) * 100;
+      const rightPct = (trimEndSeconds / videoDuration) * 100;
+      trimMaskLeft.style.width = (w * leftPct / 100) + "px";
+      trimMaskRight.style.width = (w * (100 - rightPct) / 100) + "px";
+    }
+
+    function updateTrimHandlesFromSeconds() {
+      const leftPct = (trimStartSeconds / videoDuration) * 100;
+      const rightPct = (trimEndSeconds / videoDuration) * 100;
+      trimHandleLeft.style.left = leftPct + "%";
+      trimHandleRight.style.left = rightPct + "%";
+      trimHandleLeft.setAttribute("aria-valuenow", leftPct.toFixed(0));
+      trimHandleRight.setAttribute("aria-valuenow", rightPct.toFixed(0));
+      updateTrimTooltip("left", trimStartSeconds);
+      updateTrimTooltip("right", trimEndSeconds);
+      updateTrimMask();
+    }
+
+    function trimPercentToSeconds(pct) {
+      return (pct / 100) * videoDuration;
+    }
+
+    function syncVideoToTrimRange() {
+      if (!trimVideoPreview.src || !videoDuration) return;
+      const t = trimVideoPreview.currentTime;
+      if (t < trimStartSeconds) {
+        trimVideoPreview.currentTime = trimStartSeconds;
+      } else if (t > trimEndSeconds) {
+        trimVideoPreview.currentTime = trimEndSeconds;
+        trimVideoPreview.pause();
+      }
+    }
+
+    function wireTrimPlaybackSync() {
+      if (trimPlaybackSyncWired) return;
+      trimPlaybackSyncWired = true;
+
+      trimVideoPreview.addEventListener("timeupdate", () => {
+        const t = trimVideoPreview.currentTime;
+        if (t >= trimEndSeconds) {
+          trimVideoPreview.pause();
+          trimVideoPreview.currentTime = trimEndSeconds;
+        } else if (t < trimStartSeconds) {
+          trimVideoPreview.currentTime = trimStartSeconds;
+        }
+      });
+
+      trimVideoPreview.addEventListener("play", () => {
+        const t = trimVideoPreview.currentTime;
+        if (t < trimStartSeconds || t > trimEndSeconds) {
+          trimVideoPreview.currentTime = trimStartSeconds;
+        }
+      });
+
+      trimVideoPreview.addEventListener("seeked", () => {
+        syncVideoToTrimRange();
+      });
+    }
+
+    function onTrimTimelineMouseMove(e) {
+      if (!trimDragging || !videoDuration) return;
+      const rect = trimTimeline.getBoundingClientRect();
+      let pct = ((e.clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      const minGapPct = (2 / videoDuration) * 100;
+      if (trimDragging === "left") {
+        trimStartSeconds = trimPercentToSeconds(pct);
+        if (trimStartSeconds >= trimEndSeconds - 0.5) trimStartSeconds = trimEndSeconds - 0.5;
+        if (trimStartSeconds < 0) trimStartSeconds = 0;
+      } else {
+        trimEndSeconds = trimPercentToSeconds(pct);
+        if (trimEndSeconds <= trimStartSeconds + 0.5) trimEndSeconds = trimStartSeconds + 0.5;
+        if (trimEndSeconds > videoDuration) trimEndSeconds = videoDuration;
+      }
+      updateTrimHandlesFromSeconds();
+      syncVideoToTrimRange();
+    }
+
+    function onTrimTimelineMouseUp() {
+      trimDragging = null;
+      document.removeEventListener("mousemove", onTrimTimelineMouseMove);
+      document.removeEventListener("mouseup", onTrimTimelineMouseUp);
+      trimHandleLeft.classList.remove("dragging");
+      trimHandleRight.classList.remove("dragging");
+    }
+
+    function generateTrimThumbnails(videoSrc, duration) {
+      const numFrames = 16;
+      return new Promise((resolve, reject) => {
+        const v = trimThumbVideo;
+        v.src = videoSrc;
+        v.currentTime = 0;
+        const thumbnails = [];
+        let index = 0;
+
+        function capture() {
+          if (index >= numFrames) {
+            v.src = "";
+            resolve(thumbnails);
+            return;
+          }
+          const t = (index / numFrames) * duration;
+          v.currentTime = t;
+        }
+
+        v.onseeked = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 160;
+          canvas.height = 90;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          thumbnails.push(canvas.toDataURL("image/jpeg", 0.7));
+          index++;
+          capture();
+        };
+
+        v.onerror = () => reject(new Error("Video load failed"));
+        v.onloadedmetadata = () => capture();
+      });
+    }
+
+    function buildTrimTimeline(thumbnails) {
+      trimThumbnails = thumbnails;
+      trimTrack.innerHTML = "";
+      thumbnails.forEach((src) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "";
+        trimTrack.appendChild(img);
+      });
+      trimStartSeconds = 0;
+      trimEndSeconds = videoDuration;
+      updateTrimHandlesFromSeconds();
+      syncVideoToTrimRange();
+      wireTrimPlaybackSync();
+
+      trimHandleLeft.onmousedown = (e) => {
+        e.preventDefault();
+        trimDragging = "left";
+        trimHandleLeft.classList.add("dragging");
+        document.addEventListener("mousemove", onTrimTimelineMouseMove);
+        document.addEventListener("mouseup", onTrimTimelineMouseUp);
+      };
+      trimHandleRight.onmousedown = (e) => {
+        e.preventDefault();
+        trimDragging = "right";
+        trimHandleRight.classList.add("dragging");
+        document.addEventListener("mousemove", onTrimTimelineMouseMove);
+        document.addEventListener("mouseup", onTrimTimelineMouseUp);
+      };
+    }
+
+    async function onTrimStageFileSelected(file) {
+      const valid = validateFile(file);
+      if (!valid) return;
+      setTrimStatus("Uploading…", "loading");
+      setTrimVideoLoading(true);
       const formData = new FormData();
       formData.append("video", file);
-
       try {
-        const res = await fetch("/process", { method: "POST", body: formData });
+        const res = await fetch("/upload", { method: "POST", body: formData });
         const data = await res.json();
+        if (!res.ok) {
+          setTrimStatus("Error: " + (data.error || res.statusText), "error");
+          return;
+        }
+        currentFilename = data.filename;
+        const infoRes = await fetch("/video_info/" + encodeURIComponent(currentFilename));
+        const info = await infoRes.json();
+        if (infoRes.ok && info.duration != null) {
+          videoDuration = info.duration;
+          trimStartSeconds = 0;
+          trimEndSeconds = videoDuration;
+        }
+        const previewUrl = "/preview/" + encodeURIComponent(currentFilename);
+        showTrimVideo(previewUrl);
+        trimTimelineWrap.classList.add("visible");
+        trimControls.style.display = "block";
+        trimApplyBtn.disabled = false;
+        continueToCaptionBtn.disabled = false;
+        setTrimStatus("Building thumbnails…", "loading");
+        try {
+          const thumbs = await generateTrimThumbnails(previewUrl, videoDuration);
+          buildTrimTimeline(thumbs);
+        } catch (err) {
+          setTrimStatus("Thumbnails failed; you can still trim.", "loading");
+          setTimeout(() => setTrimStatus(""), 2000);
+          trimStartSeconds = 0;
+          trimEndSeconds = videoDuration;
+          updateTrimHandlesFromSeconds();
+        }
+        setTrimStatus("");
+      } catch (err) {
+        setTrimStatus("Error: " + err.message, "error");
+      } finally {
+        setTrimVideoLoading(false);
+      }
+    }
 
+    async function applyTrim() {
+      const start = trimStartSeconds;
+      const end = trimEndSeconds;
+      if (start >= end) {
+        setTrimStatus("Start must be less than end.", "error");
+        return;
+      }
+      setTrimStatus("Trimming…", "loading");
+      setTrimVideoLoading(true);
+      try {
+        const res = await fetch("/trim/" + encodeURIComponent(currentFilename), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ start_seconds: start, end_seconds: end }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setTrimStatus("Error: " + (data.error || res.statusText), "error");
+          return;
+        }
+        currentFilename = data.trimmed_filename;
+        videoDuration = end - start;
+        trimStartSeconds = 0;
+        trimEndSeconds = videoDuration;
+        const previewUrl = "/preview/" + encodeURIComponent(currentFilename) + "?t=" + Date.now();
+        showTrimVideo(previewUrl);
+        setTrimStatus("Building thumbnails…", "loading");
+        try {
+          const thumbs = await generateTrimThumbnails(previewUrl, videoDuration);
+          buildTrimTimeline(thumbs);
+        } catch (err) {
+          updateTrimHandlesFromSeconds();
+        }
+        setTrimStatus("Trim applied.");
+        setTimeout(() => setTrimStatus(""), 2000);
+      } catch (err) {
+        setTrimStatus("Error: " + err.message, "error");
+      } finally {
+        setTrimVideoLoading(false);
+      }
+    }
+
+    async function goToCaptionStage() {
+      showStage("caption");
+      captionVideoWrap.classList.add("visible");
+      const transcriptRes = await fetch("/get_transcript/" + encodeURIComponent(currentFilename));
+      if (transcriptRes.ok) {
+        await loadVtt(currentFilename);
+        await loadTranscript(currentFilename);
+        videoPreview.src = "/download/processed_" + encodeURIComponent(currentFilename);
+        reprocessBtn.disabled = false;
+        saveVttBtn.disabled = false;
+        rerenderBtn.disabled = false;
+        selectFillersBtn.disabled = false;
+        return;
+      }
+      setStatus("Generating captions…", "loading");
+      setCaptionVideoLoading(true);
+      reprocessBtn.disabled = true;
+      saveVttBtn.disabled = true;
+      rerenderBtn.disabled = true;
+      selectFillersBtn.disabled = true;
+      try {
+        const res = await fetch("/process_existing/" + encodeURIComponent(currentFilename), { method: "POST" });
+        const data = await res.json();
         if (!res.ok) {
           setStatus("Error: " + (data.error || res.statusText), "error");
           return;
         }
-
         clearStatus();
         await loadVtt(currentFilename);
         await loadTranscript(currentFilename);
-        videoPreview.src = "/download/" + data.output_file;
+        videoPreview.src = "/download/" + encodeURIComponent(data.output_file);
         reprocessBtn.disabled = false;
         saveVttBtn.disabled = false;
+        rerenderBtn.disabled = false;
+        selectFillersBtn.disabled = false;
       } catch (err) {
         setStatus("Error: " + err.message, "error");
-        reprocessBtn.disabled = false;
-        saveVttBtn.disabled = false;
       } finally {
-        setVideoLoading(false);
+        setCaptionVideoLoading(false);
       }
     }
 
@@ -595,11 +1209,10 @@
       }
     }
 
-    function onFileSelected(file) {
-      const valid = validateFile(file);
-      if (!valid) return;
-      processVideo(valid);
-    }
+    tabTrim.addEventListener("click", () => showStage("trim"));
+    tabCaption.addEventListener("click", () => {
+      if (currentFilename) goToCaptionStage();
+    });
 
     dropzone.addEventListener("click", () => fileInput.click());
     dropzone.addEventListener("dragover", (e) => {
@@ -611,13 +1224,16 @@
       e.preventDefault();
       dropzone.classList.remove("dragover");
       const file = e.dataTransfer.files[0];
-      if (file) onFileSelected(file);
+      if (file) onTrimStageFileSelected(file);
     });
     fileInput.addEventListener("change", () => {
       const file = fileInput.files[0];
-      if (file) onFileSelected(file);
+      if (file) onTrimStageFileSelected(file);
       fileInput.value = "";
     });
+
+    trimApplyBtn.addEventListener("click", applyTrim);
+    continueToCaptionBtn.addEventListener("click", goToCaptionStage);
 
     saveVttBtn.addEventListener("click", async () => {
       if (!currentFilename) return;
@@ -642,7 +1258,7 @@
     reprocessBtn.addEventListener("click", async () => {
       if (!currentFilename) return;
       setStatus("Re-processing…", "loading");
-      setVideoLoading(true);
+      setCaptionVideoLoading(true);
       reprocessBtn.disabled = true;
       try {
         const res = await fetch("/reprocess/" + encodeURIComponent(currentFilename), {
@@ -659,11 +1275,11 @@
         setStatus("Error: " + err.message, "error");
       } finally {
         reprocessBtn.disabled = false;
-        setVideoLoading(false);
+        setCaptionVideoLoading(false);
       }
     });
 
-      selectFillersBtn.addEventListener("click", () => {
+    selectFillersBtn.addEventListener("click", () => {
         if (transcriptSegments.length === 0) return;
         selectFillerWords();
       });
@@ -676,7 +1292,7 @@
           : "Re-rendering full video…",
         "loading"
       );
-      setVideoLoading(true);
+      setCaptionVideoLoading(true);
       rerenderBtn.disabled = true;
       try {
         const res = await fetch("/reprocess_edited/" + encodeURIComponent(currentFilename), {
@@ -699,7 +1315,7 @@
         setStatus("Error: " + err.message, "error");
       } finally {
         rerenderBtn.disabled = false;
-        setVideoLoading(false);
+        setCaptionVideoLoading(false);
       }
     });
   </script>
