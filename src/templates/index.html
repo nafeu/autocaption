@@ -47,10 +47,51 @@
     .stage-nav {
       flex-shrink: 0;
       display: flex;
+      align-items: center;
       gap: 0;
       background: rgba(0, 0, 0, 0.35);
       border-bottom: 1px solid rgba(255, 240, 90, 0.15);
       padding: 0 var(--space);
+    }
+
+    .stage-nav-brand {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 var(--space);
+    }
+
+    .stage-nav-brand .app-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--color-fg);
+      letter-spacing: 0.02em;
+    }
+
+    .stage-nav-brand .nav-divider {
+      width: 4px;
+      height: 4px;
+      background: var(--color-muted);
+      border-radius: 50%;
+      opacity: 0.8;
+    }
+
+    .stage-nav-brand a {
+      display: inline-flex;
+      align-items: center;
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .stage-nav-brand a:hover {
+      color: var(--color-a);
+    }
+
+    .stage-nav-brand a i {
+      font-size: 1rem;
     }
 
     .stage-nav button {
@@ -594,6 +635,16 @@
       <button type="button" id="tabCaption" role="tab" aria-selected="false" aria-controls="stageCaption">
         <i class="fas fa-closed-captioning"></i> Caption
       </button>
+      <div class="stage-nav-brand">
+        <span class="app-name">autocaption</span>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <a href="https://github.com/nafeu/autocaption" target="_blank" rel="noopener noreferrer" title="GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://discord.gg/d9M9CQhhmS" target="_blank" rel="noopener noreferrer" title="Discord">
+          <i class="fab fa-discord"></i>
+        </a>
+      </div>
     </nav>
 
     <div class="stage-body">
@@ -685,6 +736,9 @@
               <button type="button" id="saveVttBtn" class="btn" disabled>
                 <i class="fas fa-save"></i> Save VTT
               </button>
+              <button type="button" id="downloadVideoBtn" class="btn btn-secondary" disabled title="Save video to your computer (choose location)">
+                <i class="fas fa-download"></i> Download Video
+              </button>
             </div>
           </div>
         </aside>
@@ -730,6 +784,7 @@
     const saveVttBtn = document.getElementById("saveVttBtn");
     const rerenderBtn = document.getElementById("rerenderBtn");
     const selectFillersBtn = document.getElementById("selectFillersBtn");
+    const downloadVideoBtn = document.getElementById("downloadVideoBtn");
 
     const FILLER_WORDS = new Set([
       "um", "umm", "uh", "uhh", "uhhh", "ah", "hmm", "hm", "hmmm", "er", "eh",
@@ -1079,6 +1134,7 @@
         saveVttBtn.disabled = false;
         rerenderBtn.disabled = false;
         selectFillersBtn.disabled = false;
+        downloadVideoBtn.disabled = false;
         return;
       }
       setStatus("Generating captions…", "loading");
@@ -1087,6 +1143,7 @@
       saveVttBtn.disabled = true;
       rerenderBtn.disabled = true;
       selectFillersBtn.disabled = true;
+      downloadVideoBtn.disabled = true;
       try {
         const res = await fetch("/process_existing/" + encodeURIComponent(currentFilename), { method: "POST" });
         const data = await res.json();
@@ -1102,6 +1159,7 @@
         saveVttBtn.disabled = false;
         rerenderBtn.disabled = false;
         selectFillersBtn.disabled = false;
+        downloadVideoBtn.disabled = false;
       } catch (err) {
         setStatus("Error: " + err.message, "error");
       } finally {
@@ -1252,6 +1310,45 @@
         }
       } catch (err) {
         setStatus("Error: " + err.message, "error");
+      }
+    });
+
+    downloadVideoBtn.addEventListener("click", async () => {
+      const url = videoPreview.src;
+      if (!url || url === "" || url.endsWith("#") || url.endsWith("about:blank")) return;
+      const suggestedName = url.split("/").pop().split("?")[0] || "video.mp4";
+      setStatus("Preparing download…", "loading");
+      downloadVideoBtn.disabled = true;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to load video");
+        const blob = await res.blob();
+        if (typeof window.showSaveFilePicker === "function") {
+          const handle = await window.showSaveFilePicker({
+            suggestedName,
+            types: [{ description: "Video", accept: { "video/mp4": [".mp4"] } }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          setStatus("Video saved.", "loading");
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = suggestedName;
+          a.click();
+          URL.revokeObjectURL(a.href);
+          setStatus("Download started.", "loading");
+        }
+        setTimeout(clearStatus, 2000);
+      } catch (err) {
+        if (err.name === "AbortError") {
+          setStatus("");
+        } else {
+          setStatus("Error: " + (err.message || "Download failed"), "error");
+        }
+      } finally {
+        downloadVideoBtn.disabled = false;
       }
     });
 
