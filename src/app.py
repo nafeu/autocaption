@@ -50,11 +50,20 @@ def process_video():
 
 @app.route("/download/<filename>")
 def download_file(filename):
-    output_path = os.path.join(app.config["PROCESSED_FOLDER"], filename)
-    if os.path.exists(output_path):
-        return send_file(output_path, as_attachment=True)
-    else:
+    path = os.path.join(app.config["PROCESSED_FOLDER"], filename)
+    if not os.path.exists(path):
         return jsonify({"error": "File not found"}), 404
+    return send_file(path, as_attachment=True)
+
+
+@app.route("/download_vtt/<filename>")
+def download_vtt(filename):
+    path = os.path.join(
+        app.config["UPLOAD_FOLDER"], f"{os.path.splitext(filename)[0]}.vtt"
+    )
+    if not os.path.exists(path):
+        return jsonify({"error": "VTT file not found"}), 404
+    return send_file(path, as_attachment=True, mimetype="text/vtt")
 
 
 @app.route("/get_vtt/<filename>")
